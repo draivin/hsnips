@@ -2,7 +2,7 @@
     "name": "hsnips",
     "displayName": "HyperSnips",
     "icon": "images/hypersnips.png",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "publisher": "draivin",
     "repository": {
         "type": "git",
@@ -47,8 +47,9 @@
                 "extensions": [
                     ".hsnips"
                 ],
-                "aliases": ["HyperSnips"]
-
+                "aliases": [
+                    "HyperSnips"
+                ]
             }
         ],
         "grammars": [
