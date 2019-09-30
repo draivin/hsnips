@@ -1,0 +1,72 @@
+{
+    "name": "hsnips",
+    "displayName": "HyperSnips",
+    "icon": "images/hypersnips.png",
+    "version": "0.0.1",
+    "publisher": "draivin",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/draivin/hsnips"
+    },
+    "bugs": {
+        "url": "https://github.com/draivin/hsnips/issues"
+    },
+    "engines": {
+        "vscode": "^1.32.0"
+    },
+    "categories": [
+        "Snippets",
+        "Other"
+    ],
+    "keywords": [
+        "ultisnips",
+        "programmable snippets",
+        "dynamic snippets",
+        "snippets"
+    ],
+    "preview": true,
+    "activationEvents": [
+        "*"
+    ],
+    "contributes": {
+        "commands": [
+            {
+                "category": "HyperSnips",
+                "command": "hsnips.openSnippetsDir",
+                "title": "Open snippets directory"
+            }
+        ],
+        "languages": [
+            {
+                "id": "HyperSnips",
+                "extensions": [
+                    ".hsnips"
+                ]
+            }
+        ],
+        "grammars": [
+            {
+                "language": "HyperSnips",
+                "scopeName": "source.hsnips",
+                "path": "./syntaxes/hsnips.tmLanguage.json"
+            }
+        ]
+    },
+    "main": "./out/extension.js",
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "lint": "tslint -p ./",
+        "watch": "tsc -watch -p ./"
+    },
+    "devDependencies": {
+        "@types/node": "^10.14.19",
+        "@types/vscode": "^1.32.0",
+        "js-yaml": "^3.13.1",
+        "tslint": "^5.20.0",
+        "typescript": "^3.6.3"
+    },
+    "dependencies": {
+        "open-file-explorer": "^1.0.2"
+    }
+}
