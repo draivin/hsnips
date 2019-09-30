@@ -75,6 +75,10 @@ export function activate(context: vscode.ExtensionContext) {
     () =>  openExplorer(getSnippetDir())
   ));
 
+  context.subscriptions.push(vscode.commands.registerCommand('hsnips.reloadSnippets',
+    () => loadSnippets()
+  ));
+
   context.subscriptions.push(vscode.workspace.onDidSaveTextDocument(document => {
     if (document.languageId == 'HyperSnips') {
       loadSnippets();

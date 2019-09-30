@@ -33,7 +33,12 @@
             {
                 "category": "HyperSnips",
                 "command": "hsnips.openSnippetsDir",
-                "title": "Open snippets directory"
+                "title": "Open Snippets Directory"
+            },
+            {
+                "category": "HyperSnips",
+                "command": "hsnips.reloadSnippets",
+                "title": "Reload Snippets"
             }
         ],
         "languages": [
