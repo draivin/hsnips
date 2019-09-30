@@ -3,7 +3,7 @@ scopeName: "source.hsnips"
 name: comment
 patterns:
 -
-  begin: '^(snippet) ?(?:([\w\d_]+)|(`[^`]+`))?(?: ("[^"]+"))?(?: ([A]*))?.*'
+  begin: '^(snippet) ?(?:([\S]+)|(`[^`]+`))?(?: ("[^"]+"))?(?: ([A]*))?.*'
   beginCaptures:
     1:
       name: keyword.control

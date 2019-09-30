@@ -95,19 +95,7 @@ export function activate(context: vscode.ExtensionContext) {
   }
 
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('hsnips.expand',
-    (editor, _, snippet: HSnippet, position: vscode.Position, matchGroups: string[]) => {
-      let document = editor.document;
-      let range = document.getWordRangeAtPosition(position);
-
-      if (snippet.regexp) {
-        let line = document.getText(lineRange(0, position));
-        let match = snippet.regexp.exec(line);
-        if (match) {
-          range = lineRange(match.index, position);
-        }
-      }
-
-      if (!range) return;
+    (editor, _, snippet: HSnippet, range: vscode.Range, matchGroups: string[]) => {
       expandSnippet(snippet, editor, range, matchGroups);
     }
   ));
@@ -115,10 +103,20 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(vscode.languages.registerCompletionItemProvider('*',
     {
       provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
-        let word = '';
-        let range = document.getWordRangeAtPosition(position);
-        if (range) word = document.getText(range);
         let line = document.getText(lineRange(0, position));
+
+        // TODO: These are some weird defaults, take a look at them and find something more
+        // reasonable, perhaps by introducing new flags to the snippets.
+
+        // Checks if the cursor is at a word, if so the word is our context, otherwise grab
+        // everything until previous whitespace, and that is our context.
+        let range = document.getWordRangeAtPosition(position);
+        if (!range) {
+          let match = line.match(/\S*$/);
+          range = lineRange((match as RegExpMatchArray).index || 0, position);
+        }
+
+        let context = document.getText(range);
 
         let snippets = SNIPPETS_BY_LANGUAGE.get(document.languageId.toLowerCase());
         if (!snippets) snippets = SNIPPETS_BY_LANGUAGE.get('all');
@@ -126,7 +124,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         let completions = [];
         for (let snippet of snippets) {
-          let snippetMatches = snippet.trigger && snippet.trigger == word;
+          let snippetMatches = snippet.trigger && snippet.trigger == context;
           let snippetRange = range;
           let matchGroups: string[] = [];
 
@@ -139,16 +137,6 @@ export function activate(context: vscode.ExtensionContext) {
             }
           }
 
-          if (snippetMatches || (word && snippet.trigger.startsWith(word))) {
-            let completionItem = new vscode.CompletionItem(snippet.trigger || word);
-            completionItem.detail = snippet.description;
-            completionItem.command = {
-              command: 'hsnips.expand',
-              title: 'expand',
-              arguments: [snippet, position, matchGroups]
-            };
-            completions.push(completionItem);
-          }
 
           if (snippetRange && snippet.automatic && snippetMatches) {
             let editor = vscode.window.activeTextEditor;
@@ -156,6 +144,27 @@ export function activate(context: vscode.ExtensionContext) {
               expandSnippet(snippet, editor, snippetRange, matchGroups);
               return;
             }
+          } else if (snippetMatches || (context && snippet.trigger.startsWith(context))) {
+            let charDelta = 0;
+
+            if (context && snippet.trigger.startsWith(context)) {
+              charDelta = snippet.trigger.length - context.length;
+            }
+
+            let replacementRange = lineRange(
+              snippetRange.start.character,
+              position.translate(0, charDelta)
+            );
+
+            let completionItem = new vscode.CompletionItem(snippet.trigger || context);
+            completionItem.range = snippetRange;
+            completionItem.detail = snippet.description;
+            completionItem.command = {
+              command: 'hsnips.expand',
+              title: 'expand',
+              arguments: [snippet, replacementRange, matchGroups]
+            };
+            completions.push(completionItem);
           }
         }
 
