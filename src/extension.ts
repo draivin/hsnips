@@ -108,7 +108,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
   ));
 
-  context.subscriptions.push(vscode.languages.registerCompletionItemProvider('plaintext',
+  context.subscriptions.push(vscode.languages.registerCompletionItemProvider('*',
     {
       provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
         let word = '';
