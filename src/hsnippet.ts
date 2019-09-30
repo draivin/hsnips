@@ -174,8 +174,9 @@ export class HSnippetInstance {
     }
 
     let changedIndices = this.placeholderRanges
-      .filter(range => changes.some(change => range.contains(change.range)))
-      .map((_, i) => i);
+      .map((range, i) => [range, i] as [vscode.Range, number])
+      .filter(([range, _]) => changes.some(change => range.contains(change.range)))
+      .map(([_, i]) => i);
 
     this.placeholderRanges = this.placeholderRanges.map(updateRange);
     this.blockRanges = this.blockRanges.map(updateRange);
