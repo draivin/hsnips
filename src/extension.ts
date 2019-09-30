@@ -80,7 +80,7 @@ export function activate(context: vscode.ExtensionContext) {
   ));
 
   context.subscriptions.push(vscode.workspace.onDidSaveTextDocument(document => {
-    if (document.languageId == 'HyperSnips') {
+    if (document.languageId == 'hsnips') {
       loadSnippets();
     }
   }));
