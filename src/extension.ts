@@ -54,7 +54,7 @@ async function loadSnippets() {
     let filePath = path.join(snippetDir, file);
     let fileData = await readFileAsync(filePath, 'utf8');
 
-    let language = path.basename(file, '.hsnips');
+    let language = path.basename(file, '.hsnips').toLowerCase();
 
     SNIPPETS_BY_LANGUAGE.set(language, parse(fileData));
   }
@@ -116,7 +116,7 @@ export function activate(context: vscode.ExtensionContext) {
         if (range) word = document.getText(range);
         let line = document.getText(lineRange(0, position));
 
-        let snippets = SNIPPETS_BY_LANGUAGE.get(document.languageId);
+        let snippets = SNIPPETS_BY_LANGUAGE.get(document.languageId.toLowerCase());
         if (!snippets) snippets = SNIPPETS_BY_LANGUAGE.get('all');
         if (!snippets) return;
 
