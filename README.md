@@ -71,15 +71,15 @@ blocks in the snippet.
 - Simple snippet which greets you with the current date and time
 ```hsnips
 snippet dategreeting "Gives you the current date!"
-Hello from your hsnip at ``rv = (new Date()).toDateString()``!
+Hello from your hsnip at ``rv = new Date().toDateString()``!
 endsnippet
 ```
 
 - Box snippet as shown in the gif above
 ```hsnips
 snippet box "Box" A
-``rv = '┌' + '─'.repeat((t[0] || '').length + 2) + '┐'``
+``rv = '┌' + '─'.repeat(t[0].length + 2) + '┐'``
 │ $1 │
-``rv = '└' + '─'.repeat((t[0] || '').length + 2) + '┘'``
+``rv = '└' + '─'.repeat(t[0].length + 2) + '┘'``
 endsnippet
 ```
