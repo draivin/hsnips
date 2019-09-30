@@ -20,13 +20,23 @@ function parseSnippetHeader(header: string): HSnippetHeader {
   };
 }
 
+interface HSnippetInfo {
+  body: string;
+  placeholders: number;
+  header: HSnippetHeader;
+}
+
 function escapeString(string: string) {
   return string.replace('"', '\\"')
     .replace('\\', '\\\\');
 }
 
-function parseSnippet(header: string, lines: string[]): [string, HSnippetHeader] {
-  let headerInfo = parseSnippetHeader(header);
+function countPlaceholders(string: string) {
+  return string.split(/\$\d+|\$\{\d+\}/g).length - 1;
+}
+
+function parseSnippet(headerLine: string, lines: string[]): HSnippetInfo {
+  let header = parseSnippetHeader(headerLine);
 
   let script = [`(t, m) => {`];
   script.push(`let rv = "";`);
@@ -34,6 +44,7 @@ function parseSnippet(header: string, lines: string[]): [string, HSnippetHeader]
   script.push(`let blockResults = [];`);
 
   let isCode = false;
+  let placeholders = 0;
 
   while (lines.length > 0) {
     let line = lines.shift() as string;
@@ -55,10 +66,12 @@ function parseSnippet(header: string, lines: string[]): [string, HSnippetHeader]
       } else if (!line.includes(CODE_DELIMITER)) {
         script.push(`result.push("${escapeString(line)}");`);
         script.push(`result.push("\\n");`);
+        placeholders += countPlaceholders(line);
       } else if (isCode == false) {
         let [text, ...rest] = line.split(CODE_DELIMITER);
         script.push(`result.push("${escapeString(text)}");`);
         script.push(`rv = "";`);
+        placeholders += countPlaceholders(text);
         lines.unshift(rest.join(CODE_DELIMITER));
         isCode = true;
       }
@@ -70,7 +83,7 @@ function parseSnippet(header: string, lines: string[]): [string, HSnippetHeader]
   script.push(`return [result, blockResults];`);
   script.push(`}`);
 
-  return [script.join('\n'), headerInfo];
+  return { body: script.join('\n'), header, placeholders};
 }
 
 // Transforms an hsnips file into a single function where the global context lives, every snippet is
@@ -101,11 +114,11 @@ export function parse(content: string): HSnippet[] {
 
   script.push(`return [`);
   for (let snippet of snippetData) {
-    script.push(snippet[0]);
+    script.push(snippet.body);
     script.push(',');
   }
   script.push(`]`);
 
   let generators = new Function(script.join('\n'))();
-  return snippetData.map((s, i) => new HSnippet(s[1], generators[i]));
+  return snippetData.map((s, i) => new HSnippet(s.header, generators[i], s.placeholders));
 }

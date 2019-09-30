@@ -9,10 +9,12 @@ export class HSnippet {
   generator: GeneratorFunction;
   automatic = false;
   regexp?: RegExp;
+  placeholders: number;
 
-  constructor(header: HSnippetHeader, generator: GeneratorFunction) {
+  constructor(header: HSnippetHeader, generator: GeneratorFunction, placeholders: number) {
     this.description = header.description;
     this.generator = generator;
+    this.placeholders = placeholders;
 
     if (header.trigger instanceof RegExp) {
       this.regexp = header.trigger;
@@ -55,7 +57,10 @@ export class HSnippetInstance {
 
     let generatorResult: GeneratorResult = [[], []];
     try {
-      generatorResult = type.generator([], this.matchGroups);
+      generatorResult = type.generator(
+        new Array(this.type.placeholders).fill(''),
+        this.matchGroups
+      );
     } catch (e) {
       vscode.window.showWarningMessage(
         `Snippet ${this.type.description} failed to expand with error: ${e.message}`
