@@ -43,10 +43,12 @@
         ],
         "languages": [
             {
-                "id": "HyperSnips",
+                "id": "hsnips",
                 "extensions": [
                     ".hsnips"
-                ]
+                ],
+                "aliases": ["HyperSnips"]
+
             }
         ],
         "grammars": [

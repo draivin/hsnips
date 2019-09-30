@@ -17,7 +17,8 @@ directory`.
 Additionally, you can create an `all.hsnips` file for snippets that should be available on all languages.
 
 ### Snippets file
-A snippet is a file with the `.hsnips` extension, the file is composed of two types of blocks: global blocks and snippet blocks.
+A snippets file is a file with the `.hsnips` extension, the file is composed of two types of blocks:
+global blocks and snippet blocks.
 
 Global blocks are JavaScript code blocks with code that is shared between all the snippets defined
 in the current file. They are defined with the `global` keyword, as follows:
