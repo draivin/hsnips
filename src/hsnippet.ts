@@ -74,6 +74,7 @@ export class HSnippetInstance {
     let line = position.line;
     let character = position.character;
     let snippetString = '';
+    let indentLevel = editor.document.lineAt(line).firstNonWhitespaceCharacterIndex;
 
     for (let section of sections) {
       let sectionStart = new vscode.Position(line, character);
@@ -93,7 +94,7 @@ export class HSnippetInstance {
 
         line += partLines.length - 1;
         if (partLines.length > 1) {
-          character = 0;
+          character = indentLevel;
         }
         character += partLines[partLines.length - 1].length;
 
