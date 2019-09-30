@@ -54,7 +54,7 @@
         ],
         "grammars": [
             {
-                "language": "HyperSnips",
+                "language": "hsnips",
                 "scopeName": "source.hsnips",
                 "path": "./syntaxes/hsnips.tmLanguage.json"
             }
