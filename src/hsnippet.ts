@@ -195,8 +195,6 @@ export class HSnippetInstance {
         let oldContent = this.editor.document.getText(range);
         let content = String(newBlocks[i]);
 
-        console.log(content);
-
         if (content != oldContent) edit.replace(range, content);
       }
     });

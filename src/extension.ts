@@ -41,6 +41,8 @@ const existsAsync = util.promisify(fs.exists);
 const mkdirAsync = util.promisify(fs.mkdir);
 
 async function loadSnippets() {
+  SNIPPETS_BY_LANGUAGE.clear();
+
   let snippetDir = getSnippetDir();
   if (!await existsAsync(snippetDir)) {
     await mkdirAsync(snippetDir);
@@ -70,11 +72,14 @@ export function activate(context: vscode.ExtensionContext) {
 
 
   context.subscriptions.push(vscode.commands.registerCommand('hsnips.openSnippetsDir',
-    () => {
-      // console.log(openFE);
-      openExplorer(getSnippetDir());
-    }
+    () =>  openExplorer(getSnippetDir())
   ));
+
+  context.subscriptions.push(vscode.workspace.onDidSaveTextDocument(document => {
+    if (document.languageId == 'HyperSnips') {
+      loadSnippets();
+    }
+  }));
 
   const triggers = [];
   for (let i = 32; i <= 126; i++) {
