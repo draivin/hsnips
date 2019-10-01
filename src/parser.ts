@@ -1,16 +1,16 @@
 import { HSnippet, HSnippetHeader } from './hsnippet';
 
 const CODE_DELIMITER = '``';
-const HEADER_REGEXP = /^snippet ?(?:(\S+)|`([^`]+)`)?(?: "([^"]+)")?(?: ([A]*))?/;
+const HEADER_REGEXP = /^snippet ?(?:`([^`]+)`|(\S+))?(?: "([^"]+)")?(?: ([A]*))?/;
 
 function parseSnippetHeader(header: string): HSnippetHeader {
   let match = HEADER_REGEXP.exec(header);
   if (!match) throw new Error('Invalid snippet header');
 
-  let trigger: string | RegExp = match[1];
-  if (match[2]) {
-    if (!match[2].endsWith('$')) match[2] += '$';
-    trigger = new RegExp(match[2]);
+  let trigger: string | RegExp = match[2];
+  if (match[1]) {
+    if (!match[1].endsWith('$')) match[1] += '$';
+    trigger = new RegExp(match[1]);
   }
 
   return {
