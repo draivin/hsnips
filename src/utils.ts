@@ -26,6 +26,7 @@ export function applyOffset(
   text: string,
   indent: number
 ): vscode.Position {
+  text = text.replace('\\$', '$');
   let lines = text.split('\n');
   let newLine = position.line + lines.length - 1;
   let charOffset = lines[lines.length - 1].length;

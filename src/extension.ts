@@ -124,6 +124,9 @@ export function activate(context: vscode.ExtensionContext) {
       provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
         let line = document.getText(lineRange(0, position));
 
+        // FIXME: Currently this breaks for expansions like "a.b", as it considers "b" as the
+        // context and will never look into "a".
+
         // Checks if the cursor is at a word, if so the word is our context, otherwise grab
         // everything until previous whitespace, and that is our context.
         let range = document.getWordRangeAtPosition(position);
