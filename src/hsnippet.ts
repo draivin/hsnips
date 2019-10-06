@@ -59,6 +59,7 @@ class HSnippetPart {
   }
 
   updateRange() {
+    if (this.updates.length == 0) return;
     this.range.update(this.updates);
     this.updates = [];
   }
@@ -157,17 +158,21 @@ export class HSnippetInstance {
     this.range = new DynamicRange(start, position);
 
     this.placeholderIds.sort();
+    if (this.placeholderIds[0] == 0) this.placeholderIds.shift();
+    this.placeholderIds.push(0);
     this.selectedPlaceholder = this.placeholderIds[0];
   }
 
   nextPlaceholder() {
     let currentIndex = this.placeholderIds.indexOf(this.selectedPlaceholder);
     this.selectedPlaceholder = this.placeholderIds[currentIndex + 1];
+    return this.selectedPlaceholder != undefined && this.selectedPlaceholder != 0;
   }
 
   prevPlaceholder() {
     let currentIndex = this.placeholderIds.indexOf(this.selectedPlaceholder);
     this.selectedPlaceholder = this.placeholderIds[currentIndex - 1];
+    return this.selectedPlaceholder != undefined && this.selectedPlaceholder != 0;
   }
 
   debugLog() {

@@ -8,7 +8,7 @@ import { parse } from './parser';
 import { lineRange, getSnippetDir } from './utils';
 
 const SNIPPETS_BY_LANGUAGE: Map<string, HSnippet[]> = new Map();
-let ACTIVE_SNIPPET: HSnippetInstance | null;
+const SNIPPET_STACK: HSnippetInstance[] = [];
 
 const readFileAsync = util.promisify(fs.readFile);
 const readdirAsync = util.promisify(fs.readdir);
@@ -51,7 +51,7 @@ function expandSnippet(
   let snippetInstance = new HSnippetInstance(snippet, editor, range.start, matchGroups);
 
   editor.insertSnippet(snippetInstance.snippetString, range).then(() => {
-    ACTIVE_SNIPPET = snippetInstance;
+    if (snippetInstance.selectedPlaceholder != 0) SNIPPET_STACK.unshift(snippetInstance);
   });
 }
 
@@ -68,21 +68,25 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand('hsnips.leaveSnippet', () => {
-      if (ACTIVE_SNIPPET) ACTIVE_SNIPPET = null;
+      while (SNIPPET_STACK.length) SNIPPET_STACK.pop();
       vscode.commands.executeCommand('leaveSnippet');
     })
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand('hsnips.nextPlaceholder', () => {
-      if (ACTIVE_SNIPPET) ACTIVE_SNIPPET.nextPlaceholder();
+      if (SNIPPET_STACK[0] && !SNIPPET_STACK[0].nextPlaceholder()) {
+        SNIPPET_STACK.shift();
+      }
       vscode.commands.executeCommand('jumpToNextSnippetPlaceholder');
     })
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand('hsnips.prevPlaceholder', () => {
-      if (ACTIVE_SNIPPET) ACTIVE_SNIPPET.prevPlaceholder();
+      if (SNIPPET_STACK[0] && !SNIPPET_STACK[0].prevPlaceholder()) {
+        SNIPPET_STACK.shift();
+      }
       vscode.commands.executeCommand('jumpToPrevSnippetPlaceholder');
     })
   );
@@ -107,23 +111,25 @@ export function activate(context: vscode.ExtensionContext) {
   // Forward all document changes so that the active snippet can update its related blocks.
   context.subscriptions.push(
     vscode.workspace.onDidChangeTextDocument(e => {
-      if (!ACTIVE_SNIPPET || ACTIVE_SNIPPET.editor.document != e.document) return;
-      ACTIVE_SNIPPET.update(e.contentChanges);
+      if (!SNIPPET_STACK.length || SNIPPET_STACK[0].editor.document != e.document) return;
+      SNIPPET_STACK[0].update(e.contentChanges);
     })
   );
 
   // Remove any stale snippet instances.
   context.subscriptions.push(
     vscode.window.onDidChangeVisibleTextEditors(() => {
-      ACTIVE_SNIPPET = null;
+      while (SNIPPET_STACK.length) SNIPPET_STACK.pop();
     })
   );
 
   context.subscriptions.push(
     vscode.window.onDidChangeTextEditorSelection(e => {
-      if (!ACTIVE_SNIPPET) return;
-      if (!e.selections.some(s => (ACTIVE_SNIPPET as HSnippetInstance).range.contains(s))) {
-        ACTIVE_SNIPPET = null;
+      while (SNIPPET_STACK.length) {
+        if (e.selections.some(s => SNIPPET_STACK[0].range.contains(s))) {
+          break;
+        }
+        SNIPPET_STACK.shift();
       }
     })
   );
