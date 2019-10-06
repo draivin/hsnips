@@ -1,9 +1,11 @@
 import * as vscode from 'vscode';
 import { DynamicRange, ChangeInfo, GrowthType } from './dynamic_range';
+import { applyOffset } from './util';
 
 type GeneratorResult = [(string | { block: number })[], string[]];
 export type GeneratorFunction = (texts: string[], matchGroups: string[]) => GeneratorResult;
 
+// Represents a snippet template from which new instances can be created.
 export class HSnippet {
   trigger: string;
   description: string;
@@ -62,28 +64,17 @@ class HSnippetPart {
   }
 }
 
-function applyOffset(position: vscode.Position, text: string, indent: number): vscode.Position {
-  let lines = text.split('\n');
-  let newLine = position.line + lines.length - 1;
-  let charOffset = lines[lines.length - 1].length;
-
-  let newChar = position.character + charOffset;
-  if (lines.length > 1) newChar = indent + charOffset;
-
-  return position.with(newLine, newChar);
-}
-
 export class HSnippetInstance {
   type: HSnippet;
-  range: DynamicRange;
-  editor: vscode.TextEditor;
-  selectedPlaceholder: number;
-  placeholderIds: number[];
-  snippetString: vscode.SnippetString;
   matchGroups: string[];
+  editor: vscode.TextEditor;
+  range: DynamicRange;
+  placeholderIds: number[];
+  selectedPlaceholder: number;
   parts: HSnippetPart[];
   blockParts: HSnippetPart[];
   blockChanged: boolean;
+  snippetString: vscode.SnippetString;
 
   constructor(
     type: HSnippet,
@@ -98,6 +89,8 @@ export class HSnippetInstance {
     this.placeholderIds = [];
     this.blockChanged = false;
 
+    // TODO, update parser so only the block that threw the error does not expand, perhaps replace
+    // the block with the error message.
     let generatorResult: GeneratorResult = [[], []];
     try {
       generatorResult = type.generator(
@@ -141,8 +134,8 @@ export class HSnippetInstance {
       }
 
       snippetString += rawSection;
-      // TODO: Handle snippets with default content in a placeholder.
 
+      // TODO: Handle snippets with default content in a placeholder.
       let PLACEHOLDER_REGEX = /\$(\d+)|\$\{(\d+)\}/;
       let match;
       while ((match = PLACEHOLDER_REGEX.exec(rawSection))) {
@@ -151,7 +144,7 @@ export class HSnippetInstance {
         let range = new DynamicRange(position, position);
 
         let placeholderId = Number(match[1] || match[2]);
-        if(!this.placeholderIds.includes(placeholderId)) this.placeholderIds.push(placeholderId);
+        if (!this.placeholderIds.includes(placeholderId)) this.placeholderIds.push(placeholderId);
         this.parts.push(new HSnippetPart(HSnippetPartType.Placeholder, range, '', placeholderId));
 
         rawSection = rawSection.substring(match.index + match[0].length);
@@ -201,10 +194,9 @@ export class HSnippetInstance {
     });
 
     let changedPlaceholders = [];
-
     let currentPart = 0;
-    // Process changes from left to right, trying to match type and preserving relative part
-    // locations.
+
+    // Expand ranges from left to right, preserving relative part positions.
     for (let change of ordChanges) {
       let part = this.parts[currentPart];
 

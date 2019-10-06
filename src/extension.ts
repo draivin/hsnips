@@ -1,37 +1,14 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as os from 'os';
 import * as util from 'util';
 import openExplorer = require('open-file-explorer');
 import { HSnippet, HSnippetInstance } from './hsnippet';
 import { parse } from './parser';
+import { lineRange, getSnippetDir } from './util';
 
 const SNIPPETS_BY_LANGUAGE: Map<string, HSnippet[]> = new Map();
 let ACTIVE_SNIPPET: HSnippetInstance | null;
-
-function expandSnippet(snippet: HSnippet, editor: vscode.TextEditor, range: vscode.Range, matchGroups: string[]) {
-  let snippetInstance = new HSnippetInstance(snippet, editor, range.start, matchGroups);
-
-  editor.insertSnippet(snippetInstance.snippetString, range).then(() => {
-    ACTIVE_SNIPPET = snippetInstance;
-  });
-}
-
-function getSnippetDir(): string {
-  let platform = os.platform();
-
-  let APPDATA = process.env.APPDATA || '';
-  let HOME = process.env.HOME || '';
-
-  if (platform == 'win32') {
-    return path.join(APPDATA, 'Code/User/hsnips');
-  } else if (platform == 'darwin') {
-    return path.join(HOME, 'Library/Application Support/Code/User/hsnips');
-  } else {
-    return path.join(HOME, '.config/Code/User/hsnips');
-  }
-}
 
 const readFileAsync = util.promisify(fs.readFile);
 const readdirAsync = util.promisify(fs.readdir);
@@ -65,10 +42,16 @@ async function loadSnippets() {
   }
 }
 
+function expandSnippet(snippet: HSnippet, editor: vscode.TextEditor, range: vscode.Range, matchGroups: string[]) {
+  let snippetInstance = new HSnippetInstance(snippet, editor, range.start, matchGroups);
+
+  editor.insertSnippet(snippetInstance.snippetString, range).then(() => {
+    ACTIVE_SNIPPET = snippetInstance;
+  });
+}
+
+
 export function activate(context: vscode.ExtensionContext) {
-  loadSnippets().then(() => console.log('hsnips loaded'));
-
-
   context.subscriptions.push(vscode.commands.registerCommand('hsnips.openSnippetsDir',
     () => openExplorer(getSnippetDir())
   ));
@@ -104,20 +87,35 @@ export function activate(context: vscode.ExtensionContext) {
     }
   }));
 
-  const triggers = [];
-  for (let i = 32; i <= 126; i++) {
-    triggers.push(String.fromCharCode(i));
-  }
-
-  function lineRange(character: number, position: vscode.Position): vscode.Range {
-    return new vscode.Range(position.line, character, position.line, position.character);
-  }
-
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('hsnips.expand',
     (editor, _, snippet: HSnippet, range: vscode.Range, matchGroups: string[]) => {
       expandSnippet(snippet, editor, range, matchGroups);
     }
   ));
+
+  // Forward all document changes so that the active snippet can update its related blocks.
+  context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(e => {
+    if (!ACTIVE_SNIPPET || ACTIVE_SNIPPET.editor.document != e.document) return;
+    ACTIVE_SNIPPET.update(e.contentChanges);
+  }));
+
+  // Remove any stale snippet instances.
+  context.subscriptions.push(vscode.window.onDidChangeVisibleTextEditors(() => {
+    ACTIVE_SNIPPET = null;
+  }));
+
+  context.subscriptions.push(vscode.window.onDidChangeTextEditorSelection(e => {
+    if (!ACTIVE_SNIPPET) return;
+    if (!e.selections.some(s => (ACTIVE_SNIPPET as HSnippetInstance).range.contains(s))) {
+      ACTIVE_SNIPPET = null;
+    }
+  }));
+
+  // Trigger snippet on every reasonable ascii character.
+  const triggers = [];
+  for (let i = 32; i <= 126; i++) {
+    triggers.push(String.fromCharCode(i));
+  }
 
   context.subscriptions.push(vscode.languages.registerCompletionItemProvider('*',
     {
@@ -192,22 +190,4 @@ export function activate(context: vscode.ExtensionContext) {
     },
     ...triggers
   ));
-
-  // Forward all document changes so that the active snippet can update its related blocks.
-  context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(e => {
-    if (!ACTIVE_SNIPPET || ACTIVE_SNIPPET.editor.document != e.document) return;
-    ACTIVE_SNIPPET.update(e.contentChanges);
-  }));
-
-  // Remove any stale snippet instances.
-  context.subscriptions.push(vscode.window.onDidChangeVisibleTextEditors(() => {
-    ACTIVE_SNIPPET = null;
-  }));
-
-  context.subscriptions.push(vscode.window.onDidChangeTextEditorSelection(e => {
-    if (!ACTIVE_SNIPPET) return;
-    if (!e.selections.some(s => (ACTIVE_SNIPPET as HSnippetInstance).range.contains(s))) {
-      ACTIVE_SNIPPET = null;
-    }
-  }));
 }
