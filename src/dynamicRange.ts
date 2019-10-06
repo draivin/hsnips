@@ -8,7 +8,7 @@ export enum GrowthType {
   FixRight
 }
 
-export interface ChangeInfo {
+export interface IChangeInfo {
   change: vscode.TextDocumentContentChangeEvent;
   growth: GrowthType;
 }
@@ -65,11 +65,11 @@ export class DynamicRange {
     return new DynamicRange(range.start, range.end);
   }
 
-  update(changes: ChangeInfo[]) {
+  update(changes: IChangeInfo[]) {
     let deltaStart = { characterDelta: 0, lineDelta: 0 };
     let deltaEnd = { characterDelta: 0, lineDelta: 0 };
 
-    for (let {change, growth} of changes) {
+    for (let { change, growth } of changes) {
       let deltaChange = getRangeDelta(this.range, change, growth);
 
       deltaStart.characterDelta += deltaChange[0].characterDelta;

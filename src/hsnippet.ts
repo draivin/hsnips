@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { DynamicRange, ChangeInfo, GrowthType } from './dynamicRange';
+import { DynamicRange, IChangeInfo, GrowthType } from './dynamicRange';
 import { applyOffset } from './utils';
 
 type GeneratorResult = [(string | { block: number })[], string[]];
@@ -14,7 +14,7 @@ export class HSnippet {
   regexp?: RegExp;
   placeholders: number;
 
-  constructor(header: HSnippetHeader, generator: GeneratorFunction, placeholders: number) {
+  constructor(header: IHSnippetHeader, generator: GeneratorFunction, placeholders: number) {
     this.description = header.description;
     this.generator = generator;
     this.placeholders = placeholders;
@@ -32,7 +32,7 @@ export class HSnippet {
   }
 }
 
-export interface HSnippetHeader {
+export interface IHSnippetHeader {
   trigger: string | RegExp;
   description: string;
   flags: string;
@@ -48,7 +48,7 @@ class HSnippetPart {
   range: DynamicRange;
   content: string;
   id?: number;
-  updates: ChangeInfo[];
+  updates: IChangeInfo[];
 
   constructor(type: HSnippetPartType, range: DynamicRange, content: string, id?: number) {
     this.type = type;

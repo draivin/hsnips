@@ -19,7 +19,7 @@ async function loadSnippets() {
   SNIPPETS_BY_LANGUAGE.clear();
 
   let snippetDir = getSnippetDir();
-  if (!await existsAsync(snippetDir)) {
+  if (!(await existsAsync(snippetDir))) {
     await mkdirAsync(snippetDir);
   }
 
@@ -42,7 +42,12 @@ async function loadSnippets() {
   }
 }
 
-function expandSnippet(snippet: HSnippet, editor: vscode.TextEditor, range: vscode.Range, matchGroups: string[]) {
+function expandSnippet(
+  snippet: HSnippet,
+  editor: vscode.TextEditor,
+  range: vscode.Range,
+  matchGroups: string[]
+) {
   let snippetInstance = new HSnippetInstance(snippet, editor, range.start, matchGroups);
 
   editor.insertSnippet(snippetInstance.snippetString, range).then(() => {
@@ -50,68 +55,78 @@ function expandSnippet(snippet: HSnippet, editor: vscode.TextEditor, range: vsco
   });
 }
 
-
 export function activate(context: vscode.ExtensionContext) {
   loadSnippets();
 
-  context.subscriptions.push(vscode.commands.registerCommand('hsnips.openSnippetsDir',
-    () => openExplorer(getSnippetDir())
-  ));
+  context.subscriptions.push(
+    vscode.commands.registerCommand('hsnips.openSnippetsDir', () => openExplorer(getSnippetDir()))
+  );
 
-  context.subscriptions.push(vscode.commands.registerCommand('hsnips.reloadSnippets',
-    () => loadSnippets()
-  ));
+  context.subscriptions.push(
+    vscode.commands.registerCommand('hsnips.reloadSnippets', () => loadSnippets())
+  );
 
-  context.subscriptions.push(vscode.commands.registerCommand('hsnips.leaveSnippet',
-    () => {
+  context.subscriptions.push(
+    vscode.commands.registerCommand('hsnips.leaveSnippet', () => {
       if (ACTIVE_SNIPPET) ACTIVE_SNIPPET = null;
       vscode.commands.executeCommand('leaveSnippet');
-    }
-  ));
+    })
+  );
 
-  context.subscriptions.push(vscode.commands.registerCommand('hsnips.nextPlaceholder',
-    () => {
+  context.subscriptions.push(
+    vscode.commands.registerCommand('hsnips.nextPlaceholder', () => {
       if (ACTIVE_SNIPPET) ACTIVE_SNIPPET.nextPlaceholder();
       vscode.commands.executeCommand('jumpToNextSnippetPlaceholder');
-    }
-  ));
+    })
+  );
 
-  context.subscriptions.push(vscode.commands.registerCommand('hsnips.prevPlaceholder',
-    () => {
+  context.subscriptions.push(
+    vscode.commands.registerCommand('hsnips.prevPlaceholder', () => {
       if (ACTIVE_SNIPPET) ACTIVE_SNIPPET.prevPlaceholder();
       vscode.commands.executeCommand('jumpToPrevSnippetPlaceholder');
-    }
-  ));
+    })
+  );
 
-  context.subscriptions.push(vscode.workspace.onDidSaveTextDocument(document => {
-    if (document.languageId == 'hsnips') {
-      loadSnippets();
-    }
-  }));
+  context.subscriptions.push(
+    vscode.workspace.onDidSaveTextDocument(document => {
+      if (document.languageId == 'hsnips') {
+        loadSnippets();
+      }
+    })
+  );
 
-  context.subscriptions.push(vscode.commands.registerTextEditorCommand('hsnips.expand',
-    (editor, _, snippet: HSnippet, range: vscode.Range, matchGroups: string[]) => {
-      expandSnippet(snippet, editor, range, matchGroups);
-    }
-  ));
+  context.subscriptions.push(
+    vscode.commands.registerTextEditorCommand(
+      'hsnips.expand',
+      (editor, _, snippet: HSnippet, range: vscode.Range, matchGroups: string[]) => {
+        expandSnippet(snippet, editor, range, matchGroups);
+      }
+    )
+  );
 
   // Forward all document changes so that the active snippet can update its related blocks.
-  context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(e => {
-    if (!ACTIVE_SNIPPET || ACTIVE_SNIPPET.editor.document != e.document) return;
-    ACTIVE_SNIPPET.update(e.contentChanges);
-  }));
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeTextDocument(e => {
+      if (!ACTIVE_SNIPPET || ACTIVE_SNIPPET.editor.document != e.document) return;
+      ACTIVE_SNIPPET.update(e.contentChanges);
+    })
+  );
 
   // Remove any stale snippet instances.
-  context.subscriptions.push(vscode.window.onDidChangeVisibleTextEditors(() => {
-    ACTIVE_SNIPPET = null;
-  }));
-
-  context.subscriptions.push(vscode.window.onDidChangeTextEditorSelection(e => {
-    if (!ACTIVE_SNIPPET) return;
-    if (!e.selections.some(s => (ACTIVE_SNIPPET as HSnippetInstance).range.contains(s))) {
+  context.subscriptions.push(
+    vscode.window.onDidChangeVisibleTextEditors(() => {
       ACTIVE_SNIPPET = null;
-    }
-  }));
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.window.onDidChangeTextEditorSelection(e => {
+      if (!ACTIVE_SNIPPET) return;
+      if (!e.selections.some(s => (ACTIVE_SNIPPET as HSnippetInstance).range.contains(s))) {
+        ACTIVE_SNIPPET = null;
+      }
+    })
+  );
 
   // Trigger snippet on every reasonable ascii character.
   const triggers = [];
@@ -119,79 +134,81 @@ export function activate(context: vscode.ExtensionContext) {
     triggers.push(String.fromCharCode(i));
   }
 
-  context.subscriptions.push(vscode.languages.registerCompletionItemProvider('*',
-    {
-      provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
-        let line = document.getText(lineRange(0, position));
+  context.subscriptions.push(
+    vscode.languages.registerCompletionItemProvider(
+      [{ scheme: 'untitled' }, { scheme: 'file' }],
+      {
+        provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
+          let line = document.getText(lineRange(0, position));
 
-        // FIXME: Currently this breaks for expansions like "a.b", as it considers "b" as the
-        // context and will never look into "a".
+          // FIXME: Currently this breaks for expansions like "a.b", as it considers "b" as the
+          // context and will never look into "a".
 
-        // Checks if the cursor is at a word, if so the word is our context, otherwise grab
-        // everything until previous whitespace, and that is our context.
-        let range = document.getWordRangeAtPosition(position);
-        if (!range) {
-          let match = line.match(/\S*$/);
-          range = lineRange((match as RegExpMatchArray).index || 0, position);
-        }
+          // Checks if the cursor is at a word, if so the word is our context, otherwise grab
+          // everything until previous whitespace, and that is our context.
+          let range = document.getWordRangeAtPosition(position);
+          if (!range) {
+            let match = line.match(/\S*$/);
+            range = lineRange((match as RegExpMatchArray).index || 0, position);
+          }
 
-        let context = document.getText(range);
+          let context = document.getText(range);
 
-        let snippets = SNIPPETS_BY_LANGUAGE.get(document.languageId.toLowerCase());
-        if (!snippets) snippets = SNIPPETS_BY_LANGUAGE.get('all');
-        if (!snippets) return;
+          let snippets = SNIPPETS_BY_LANGUAGE.get(document.languageId.toLowerCase());
+          if (!snippets) snippets = SNIPPETS_BY_LANGUAGE.get('all');
+          if (!snippets) return;
 
-        let completions = [];
-        for (let snippet of snippets) {
-          let snippetMatches = snippet.trigger && snippet.trigger == context;
-          let snippetRange = range;
-          let matchGroups: string[] = [];
-          let label = snippet.trigger;
+          let completions = [];
+          for (let snippet of snippets) {
+            let snippetMatches = snippet.trigger && snippet.trigger == context;
+            let snippetRange = range;
+            let matchGroups: string[] = [];
+            let label = snippet.trigger;
 
-          if (snippet.regexp) {
-            let match = snippet.regexp.exec(line);
-            if (match) {
-              snippetRange = lineRange(match.index, position);
-              snippetMatches = true;
-              matchGroups = match;
-              label = match[0];
+            if (snippet.regexp) {
+              let match = snippet.regexp.exec(line);
+              if (match) {
+                snippetRange = lineRange(match.index, position);
+                snippetMatches = true;
+                matchGroups = match;
+                label = match[0];
+              }
+            }
+
+            if (snippetRange && snippet.automatic && snippetMatches) {
+              let editor = vscode.window.activeTextEditor;
+              if (editor && document == editor.document) {
+                expandSnippet(snippet, editor, snippetRange, matchGroups);
+                return;
+              }
+            } else if (snippetMatches || (context && snippet.trigger.startsWith(context))) {
+              let charDelta = 0;
+
+              if (context && snippet.trigger.startsWith(context)) {
+                charDelta = snippet.trigger.length - context.length;
+              }
+
+              let replacementRange = lineRange(
+                snippetRange.start.character,
+                position.translate(0, charDelta)
+              );
+
+              let completionItem = new vscode.CompletionItem(label);
+              completionItem.range = snippetRange;
+              completionItem.detail = snippet.description;
+              completionItem.command = {
+                command: 'hsnips.expand',
+                title: 'expand',
+                arguments: [snippet, replacementRange, matchGroups]
+              };
+              completions.push(completionItem);
             }
           }
 
-
-          if (snippetRange && snippet.automatic && snippetMatches) {
-            let editor = vscode.window.activeTextEditor;
-            if (editor && document == editor.document) {
-              expandSnippet(snippet, editor, snippetRange, matchGroups);
-              return;
-            }
-          } else if (snippetMatches || (context && snippet.trigger.startsWith(context))) {
-            let charDelta = 0;
-
-            if (context && snippet.trigger.startsWith(context)) {
-              charDelta = snippet.trigger.length - context.length;
-            }
-
-            let replacementRange = lineRange(
-              snippetRange.start.character,
-              position.translate(0, charDelta)
-            );
-
-            let completionItem = new vscode.CompletionItem(label);
-            completionItem.range = snippetRange;
-            completionItem.detail = snippet.description;
-            completionItem.command = {
-              command: 'hsnips.expand',
-              title: 'expand',
-              arguments: [snippet, replacementRange, matchGroups]
-            };
-            completions.push(completionItem);
-          }
+          return completions;
         }
-
-        return completions;
-      }
-    },
-    ...triggers
-  ));
+      },
+      ...triggers
+    )
+  );
 }

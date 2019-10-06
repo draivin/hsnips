@@ -1,9 +1,9 @@
-import { HSnippet, HSnippetHeader } from './hsnippet';
+import { HSnippet, IHSnippetHeader } from './hsnippet';
 
 const CODE_DELIMITER = '``';
 const HEADER_REGEXP = /^snippet ?(?:`([^`]+)`|(\S+))?(?: "([^"]+)")?(?: ([A]*))?/;
 
-function parseSnippetHeader(header: string): HSnippetHeader {
+function parseSnippetHeader(header: string): IHSnippetHeader {
   let match = HEADER_REGEXP.exec(header);
   if (!match) throw new Error('Invalid snippet header');
 
@@ -20,22 +20,21 @@ function parseSnippetHeader(header: string): HSnippetHeader {
   };
 }
 
-interface HSnippetInfo {
+interface IHSnippetInfo {
   body: string;
   placeholders: number;
-  header: HSnippetHeader;
+  header: IHSnippetHeader;
 }
 
 function escapeString(string: string) {
-  return string.replace('"', '\\"')
-    .replace('\\', '\\\\');
+  return string.replace('"', '\\"').replace('\\', '\\\\');
 }
 
 function countPlaceholders(string: string) {
   return string.split(/\$\d+|\$\{\d+\}/g).length - 1;
 }
 
-function parseSnippet(headerLine: string, lines: string[]): HSnippetInfo {
+function parseSnippet(headerLine: string, lines: string[]): IHSnippetInfo {
   let header = parseSnippetHeader(headerLine);
 
   let script = [`(t, m) => {`];
@@ -83,7 +82,7 @@ function parseSnippet(headerLine: string, lines: string[]): HSnippetInfo {
   script.push(`return [result, blockResults];`);
   script.push(`}`);
 
-  return { body: script.join('\n'), header, placeholders};
+  return { body: script.join('\n'), header, placeholders };
 }
 
 // Transforms an hsnips file into a single function where the global context lives, every snippet is
