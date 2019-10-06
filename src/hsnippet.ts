@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { DynamicRange, ChangeInfo, GrowthType } from './dynamic_range';
-import { applyOffset } from './util';
+import { DynamicRange, ChangeInfo, GrowthType } from './dynamicRange';
+import { applyOffset } from './utils';
 
 type GeneratorResult = [(string | { block: number })[], string[]];
 export type GeneratorFunction = (texts: string[], matchGroups: string[]) => GeneratorResult;

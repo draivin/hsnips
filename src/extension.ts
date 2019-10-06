@@ -5,7 +5,7 @@ import * as util from 'util';
 import openExplorer = require('open-file-explorer');
 import { HSnippet, HSnippetInstance } from './hsnippet';
 import { parse } from './parser';
-import { lineRange, getSnippetDir } from './util';
+import { lineRange, getSnippetDir } from './utils';
 
 const SNIPPETS_BY_LANGUAGE: Map<string, HSnippet[]> = new Map();
 let ACTIVE_SNIPPET: HSnippetInstance | null;
@@ -52,6 +52,8 @@ function expandSnippet(snippet: HSnippet, editor: vscode.TextEditor, range: vsco
 
 
 export function activate(context: vscode.ExtensionContext) {
+  loadSnippets();
+
   context.subscriptions.push(vscode.commands.registerCommand('hsnips.openSnippetsDir',
     () => openExplorer(getSnippetDir())
   ));
@@ -134,6 +136,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         let context = document.getText(range);
+        console.log(range, context);
 
         let snippets = SNIPPETS_BY_LANGUAGE.get(document.languageId.toLowerCase());
         if (!snippets) snippets = SNIPPETS_BY_LANGUAGE.get('all');
