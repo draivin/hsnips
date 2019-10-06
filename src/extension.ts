@@ -124,9 +124,6 @@ export function activate(context: vscode.ExtensionContext) {
       provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
         let line = document.getText(lineRange(0, position));
 
-        // TODO: These are some weird defaults, take a look at them and find something more
-        // reasonable, perhaps by introducing new flags to the snippets.
-
         // Checks if the cursor is at a word, if so the word is our context, otherwise grab
         // everything until previous whitespace, and that is our context.
         let range = document.getWordRangeAtPosition(position);
@@ -136,7 +133,6 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         let context = document.getText(range);
-        console.log(range, context);
 
         let snippets = SNIPPETS_BY_LANGUAGE.get(document.languageId.toLowerCase());
         if (!snippets) snippets = SNIPPETS_BY_LANGUAGE.get('all');
@@ -147,6 +143,7 @@ export function activate(context: vscode.ExtensionContext) {
           let snippetMatches = snippet.trigger && snippet.trigger == context;
           let snippetRange = range;
           let matchGroups: string[] = [];
+          let label = snippet.trigger;
 
           if (snippet.regexp) {
             let match = snippet.regexp.exec(line);
@@ -154,6 +151,7 @@ export function activate(context: vscode.ExtensionContext) {
               snippetRange = lineRange(match.index, position);
               snippetMatches = true;
               matchGroups = match;
+              label = match[0];
             }
           }
 
@@ -176,7 +174,7 @@ export function activate(context: vscode.ExtensionContext) {
               position.translate(0, charDelta)
             );
 
-            let completionItem = new vscode.CompletionItem(snippet.trigger || context);
+            let completionItem = new vscode.CompletionItem(label);
             completionItem.range = snippetRange;
             completionItem.detail = snippet.description;
             completionItem.command = {
