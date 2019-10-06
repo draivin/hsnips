@@ -41,6 +41,28 @@
                 "title": "Reload Snippets"
             }
         ],
+        "keybindings": [
+            {
+                "key": "tab",
+                "command": "hsnips.nextPlaceholder",
+                "when": "editorTextFocus && hasNextTabstop && inSnippetMode"
+            },
+            {
+                "key": "shift+tab",
+                "command": "hsnips.prevPlaceholder",
+                "when": "editorTextFocus && hasPrevTabstop && inSnippetMode"
+            },
+            {
+                "key": "shift+escape",
+                "command": "hsnips.leaveSnippet",
+                "when": "editorTextFocus && inSnippetMode"
+            },
+            {
+                "key": "escape",
+                "command": "hsnips.leaveSnippet",
+                "when": "editorTextFocus && inSnippetMode"
+            }
+        ],
         "languages": [
             {
                 "id": "hsnips",

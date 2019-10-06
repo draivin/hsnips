@@ -8,15 +8,13 @@ import { HSnippet, HSnippetInstance } from './hsnippet';
 import { parse } from './parser';
 
 const SNIPPETS_BY_LANGUAGE: Map<string, HSnippet[]> = new Map();
-const ACTIVE_SNIPPETS: Map<vscode.Uri, HSnippetInstance[]> = new Map();
+let ACTIVE_SNIPPET: HSnippetInstance | null;
 
 function expandSnippet(snippet: HSnippet, editor: vscode.TextEditor, range: vscode.Range, matchGroups: string[]) {
   let snippetInstance = new HSnippetInstance(snippet, editor, range.start, matchGroups);
 
   editor.insertSnippet(snippetInstance.snippetString, range).then(() => {
-    let documentSnippets = ACTIVE_SNIPPETS.get(editor.document.uri) || [];
-    documentSnippets.push(snippetInstance);
-    ACTIVE_SNIPPETS.set(editor.document.uri, documentSnippets);
+    ACTIVE_SNIPPET = snippetInstance;
   });
 }
 
@@ -72,11 +70,32 @@ export function activate(context: vscode.ExtensionContext) {
 
 
   context.subscriptions.push(vscode.commands.registerCommand('hsnips.openSnippetsDir',
-    () =>  openExplorer(getSnippetDir())
+    () => openExplorer(getSnippetDir())
   ));
 
   context.subscriptions.push(vscode.commands.registerCommand('hsnips.reloadSnippets',
     () => loadSnippets()
+  ));
+
+  context.subscriptions.push(vscode.commands.registerCommand('hsnips.leaveSnippet',
+    () => {
+      if (ACTIVE_SNIPPET) ACTIVE_SNIPPET = null;
+      vscode.commands.executeCommand('leaveSnippet');
+    }
+  ));
+
+  context.subscriptions.push(vscode.commands.registerCommand('hsnips.nextPlaceholder',
+    () => {
+      if (ACTIVE_SNIPPET) ACTIVE_SNIPPET.nextPlaceholder();
+      vscode.commands.executeCommand('jumpToNextSnippetPlaceholder');
+    }
+  ));
+
+  context.subscriptions.push(vscode.commands.registerCommand('hsnips.prevPlaceholder',
+    () => {
+      if (ACTIVE_SNIPPET) ACTIVE_SNIPPET.prevPlaceholder();
+      vscode.commands.executeCommand('jumpToPrevSnippetPlaceholder');
+    }
   ));
 
   context.subscriptions.push(vscode.workspace.onDidSaveTextDocument(document => {
@@ -174,36 +193,21 @@ export function activate(context: vscode.ExtensionContext) {
     ...triggers
   ));
 
-  // Forward all document changes so that the snippets in that document can update their related
-  // blocks.
+  // Forward all document changes so that the active snippet can update its related blocks.
   context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(e => {
-    let document = e.document;
-
-    let snippetInstances = ACTIVE_SNIPPETS.get(document.uri);
-    if (!snippetInstances) return;
-
-    for (let instance of snippetInstances) {
-      instance.update(e.contentChanges);
-    }
+    if (!ACTIVE_SNIPPET || ACTIVE_SNIPPET.editor.document != e.document) return;
+    ACTIVE_SNIPPET.update(e.contentChanges);
   }));
 
   // Remove any stale snippet instances.
-  context.subscriptions.push(vscode.window.onDidChangeVisibleTextEditors(editors => {
-    let uris = editors.map(e => e.document.uri);
-    for (let key of ACTIVE_SNIPPETS.keys()) {
-      if (!uris.includes(key)) {
-        ACTIVE_SNIPPETS.delete(key);
-      }
-    }
+  context.subscriptions.push(vscode.window.onDidChangeVisibleTextEditors(() => {
+    ACTIVE_SNIPPET = null;
   }));
 
   context.subscriptions.push(vscode.window.onDidChangeTextEditorSelection(e => {
-    let uri = e.textEditor.document.uri;
-    let snippets = ACTIVE_SNIPPETS.get(uri);
-    if (!snippets) return;
-
-    snippets = snippets.filter(snippet => e.selections.some(sel => snippet.range.contains(sel)));
-
-    ACTIVE_SNIPPETS.set(uri, snippets);
+    if (!ACTIVE_SNIPPET) return;
+    if (!e.selections.some(s => (ACTIVE_SNIPPET as HSnippetInstance).range.contains(s))) {
+      ACTIVE_SNIPPET = null;
+    }
   }));
 }

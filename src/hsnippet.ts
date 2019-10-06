@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { DynamicRange, ChangeInfo, GrowthType } from './dynamic_range';
 
 type GeneratorResult = [(string | { block: number })[], string[]];
 export type GeneratorFunction = (texts: string[], matchGroups: string[]) => GeneratorResult;
@@ -35,15 +36,54 @@ export interface HSnippetHeader {
   flags: string;
 }
 
+enum HSnippetPartType {
+  Placeholder,
+  Block
+}
+
+class HSnippetPart {
+  type: HSnippetPartType;
+  range: DynamicRange;
+  content: string;
+  id?: number;
+  updates: ChangeInfo[];
+
+  constructor(type: HSnippetPartType, range: DynamicRange, content: string, id?: number) {
+    this.type = type;
+    this.range = range;
+    this.content = content;
+    this.id = id;
+    this.updates = [];
+  }
+
+  updateRange() {
+    this.range.update(this.updates);
+    this.updates = [];
+  }
+}
+
+function applyOffset(position: vscode.Position, text: string, indent: number): vscode.Position {
+  let lines = text.split('\n');
+  let newLine = position.line + lines.length - 1;
+  let charOffset = lines[lines.length - 1].length;
+
+  let newChar = position.character + charOffset;
+  if (lines.length > 1) newChar = indent + charOffset;
+
+  return position.with(newLine, newChar);
+}
+
 export class HSnippetInstance {
   type: HSnippet;
-  range: vscode.Range;
+  range: DynamicRange;
   editor: vscode.TextEditor;
-  placeholderRanges: vscode.Range[];
-  placeholderContents: string[];
-  blockRanges: vscode.Range[];
+  selectedPlaceholder: number;
+  placeholderIds: number[];
   snippetString: vscode.SnippetString;
   matchGroups: string[];
+  parts: HSnippetPart[];
+  blockParts: HSnippetPart[];
+  blockChanged: boolean;
 
   constructor(
     type: HSnippet,
@@ -54,6 +94,9 @@ export class HSnippetInstance {
     this.type = type;
     this.editor = editor;
     this.matchGroups = matchGroups;
+    this.selectedPlaceholder = 0;
+    this.placeholderIds = [];
+    this.blockChanged = false;
 
     let generatorResult: GeneratorResult = [[], []];
     try {
@@ -71,139 +114,160 @@ export class HSnippetInstance {
     // snippet function as 'sections', and the result of the interpolated javascript in the snippets
     // are referred to as 'blocks', as in code blocks.
     let [sections, blocks] = generatorResult;
+    blocks = blocks.map(String);
 
-    this.placeholderRanges = [];
-    this.placeholderContents = [];
-    this.blockRanges = [];
+    this.parts = [];
+    this.blockParts = [];
 
-    let line = position.line;
-    let character = position.character;
+    let start = position;
     let snippetString = '';
-    let indentLevel = editor.document.lineAt(line).firstNonWhitespaceCharacterIndex;
+    const indentLevel = editor.document.lineAt(position.line).firstNonWhitespaceCharacterIndex;
 
     for (let section of sections) {
-      let sectionStart = new vscode.Position(line, character);
+      let rawSection = section;
 
-      let sectionText = section;
-      if (typeof sectionText != 'string') {
-        sectionText = String(blocks[sectionText.block]);
+      if (typeof rawSection != 'string') {
+        let block = blocks[rawSection.block];
+        let endPosition = applyOffset(position, block, indentLevel);
+        let range = new DynamicRange(position, endPosition);
+
+        let part = new HSnippetPart(HSnippetPartType.Block, range, block);
+        this.parts.push(part);
+        this.blockParts.push(part);
+
+        snippetString += block;
+        position = endPosition;
+        continue;
       }
 
-      snippetString += sectionText;
+      snippetString += rawSection;
       // TODO: Handle snippets with default content in a placeholder.
-      let sectionParts = sectionText.split(/\$\d+|\$\{\d+\}/g);
 
-      while (sectionParts.length > 0) {
-        let textPart = sectionParts.shift() as string;
-        let partLines = textPart.split('\n');
+      let PLACEHOLDER_REGEX = /\$(\d+)|\$\{(\d+)\}/;
+      let match;
+      while ((match = PLACEHOLDER_REGEX.exec(rawSection))) {
+        let text = rawSection.substring(0, match.index);
+        position = applyOffset(position, text, indentLevel);
+        let range = new DynamicRange(position, position);
 
-        line += partLines.length - 1;
-        if (partLines.length > 1) {
-          character = indentLevel;
-        }
-        character += partLines[partLines.length - 1].length;
+        let placeholderId = Number(match[1] || match[2]);
+        if(!this.placeholderIds.includes(placeholderId)) this.placeholderIds.push(placeholderId);
+        this.parts.push(new HSnippetPart(HSnippetPartType.Placeholder, range, '', placeholderId));
 
-        let placeholderPosition = new vscode.Position(line, character);
-        this.placeholderRanges.push(new vscode.Range(placeholderPosition, placeholderPosition));
-        this.placeholderContents.push('');
+        rawSection = rawSection.substring(match.index + match[0].length);
       }
 
-      // Remove extra placeholder at the end.
-      this.placeholderContents.pop();
-      this.placeholderRanges.pop();
-
-      if (typeof section != 'string') {
-        let sectionEnd = new vscode.Position(line, character);
-        this.blockRanges.push(new vscode.Range(sectionStart, sectionEnd));
-      }
+      position = applyOffset(position, rawSection, indentLevel);
     }
 
-    let end = new vscode.Position(line, character);
-    let range = new vscode.Range(position, end);
-
-    this.range = range;
     this.snippetString = new vscode.SnippetString(snippetString);
+    this.range = new DynamicRange(start, position);
+
+    this.placeholderIds.sort();
+    this.selectedPlaceholder = this.placeholderIds[0];
+  }
+
+  nextPlaceholder() {
+    let currentIndex = this.placeholderIds.indexOf(this.selectedPlaceholder);
+    this.selectedPlaceholder = this.placeholderIds[currentIndex + 1];
+  }
+
+  prevPlaceholder() {
+    let currentIndex = this.placeholderIds.indexOf(this.selectedPlaceholder);
+    this.selectedPlaceholder = this.placeholderIds[currentIndex - 1];
+  }
+
+  debugLog() {
+    let parts = this.parts;
+    for (let i = 0; i < parts.length; i++) {
+      let range = parts[i].range.range;
+      let start = range.start;
+      let end = range.end;
+      console.log(
+        `Tabstop ${i}: "${parts[i].content}" (${start.line}, ${start.character})..(${end.line}, ${end.character})`
+      );
+    }
   }
 
   // Updates the location of all the placeholder blocks and code blocks, and if any change happened
-  // to the placeholder blocks run the snippet again with the update values so we can update the
-  // code blocks.
+  // to the placeholder blocks then run the generator function again with the updated values so the
+  // code blocks are updated.
   update(changes: readonly vscode.TextDocumentContentChangeEvent[]) {
-    type PositionDelta = { characterDelta: number; lineDelta: number };
-    function getRangeDelta(
-      range: vscode.Range,
-      change: vscode.TextDocumentContentChangeEvent
-    ): [PositionDelta, PositionDelta] {
-      let deltaStart = { characterDelta: 0, lineDelta: 0 };
-      let deltaEnd = { characterDelta: 0, lineDelta: 0 };
+    let ordChanges = [...changes];
+    ordChanges.sort((a, b) => {
+      if (a.range.end.isBefore(b.range.end)) return -1;
+      else if (a.range.end.isEqual(b.range.end)) return 0;
+      else return 1;
+    });
 
-      let textLines = change.text.split('\n');
-      let lineDelta =
-        change.text.split('\n').length - (change.range.end.line - change.range.start.line + 1);
-      let charDelta = textLines[textLines.length - 1].length - change.range.end.character;
-      if (lineDelta == 0) charDelta += change.range.start.character;
+    let changedPlaceholders = [];
 
-      if (range.start.isAfterOrEqual(change.range.end)) {
-        deltaStart.lineDelta = lineDelta;
+    let currentPart = 0;
+    // Process changes from left to right, trying to match type and preserving relative part
+    // locations.
+    for (let change of ordChanges) {
+      let part = this.parts[currentPart];
+
+      while (currentPart < this.parts.length) {
+        if (part.range.range.end.isAfterOrEqual(change.range.end)) {
+          break;
+        }
+
+        currentPart++;
+        part = this.parts[currentPart];
       }
 
-      if (range.end.isAfterOrEqual(change.range.end)) {
-        deltaEnd.lineDelta = lineDelta;
+      if (currentPart >= this.parts.length) break;
+
+      while (part.range.contains(change.range)) {
+        if (
+          (part.type == HSnippetPartType.Placeholder &&
+            part.id == this.selectedPlaceholder &&
+            !this.blockChanged) ||
+          (part.type == HSnippetPartType.Block && this.blockChanged && part.content == change.text)
+        ) {
+          if (part.type == HSnippetPartType.Placeholder) changedPlaceholders.push(part);
+          part.updates.push({ change, growth: GrowthType.Grow });
+          currentPart++;
+          part = this.parts[currentPart];
+          break;
+        }
+
+        currentPart++;
+        part = this.parts[currentPart];
       }
 
-      if (change.range.end.line == range.start.line && range.start.isAfter(change.range.end)) {
-        deltaStart.characterDelta = charDelta;
+      for (let i = currentPart; i < this.parts.length; i++) {
+        this.parts[i].updates.push({ change, growth: GrowthType.FixRight });
       }
-
-      if (change.range.end.line == range.end.line && range.end.isAfterOrEqual(change.range.end)) {
-        deltaEnd.characterDelta = charDelta;
-      }
-
-      return [deltaStart, deltaEnd];
     }
 
-    function updateRange(range: vscode.Range): vscode.Range {
-      let deltaStart = { characterDelta: 0, lineDelta: 0 };
-      let deltaEnd = { characterDelta: 0, lineDelta: 0 };
-      for (let change of changes) {
-        let deltaChange = getRangeDelta(range, change);
-        deltaStart.characterDelta += deltaChange[0].characterDelta;
-        deltaStart.lineDelta += deltaChange[0].lineDelta;
-        deltaEnd.characterDelta += deltaChange[1].characterDelta;
-        deltaEnd.lineDelta += deltaChange[1].lineDelta;
-      }
+    this.range.update(ordChanges.map(c => ({ change: c, growth: GrowthType.Grow })));
+    this.parts.forEach(p => p.updateRange());
 
-      let [newStart, newEnd] = [range.start, range.end];
-      newStart = newStart.translate(deltaStart);
-      newEnd = newEnd.translate(deltaEnd);
-      return range.with(newStart, newEnd);
-    }
+    if (this.blockChanged) this.blockChanged = false;
+    if (!changedPlaceholders.length) return;
 
-    let changedIndices = this.placeholderRanges
-      .map((range, i) => [range, i] as [vscode.Range, number])
-      .filter(([range, _]) => changes.some(change => range.contains(change.range)))
-      .map(([_, i]) => i);
+    changedPlaceholders.forEach(p => (p.content = this.editor.document.getText(p.range.range)));
+    let placeholderContents = this.parts
+      .filter(p => p.type == HSnippetPartType.Placeholder)
+      .map(p => p.content);
 
-    this.placeholderRanges = this.placeholderRanges.map(updateRange);
-    this.blockRanges = this.blockRanges.map(updateRange);
-    this.range = updateRange(this.range);
-
-    if (!changedIndices.length) return;
-
-    for (let i of changedIndices) {
-      this.placeholderContents[i] = this.editor.document.getText(this.placeholderRanges[i]);
-    }
-
-    let newBlocks = this.type.generator(this.placeholderContents, this.matchGroups)[1];
+    let blocks = this.type.generator(placeholderContents, this.matchGroups)[1].map(String);
 
     this.editor.edit(edit => {
-      for (let i = 0; i < newBlocks.length; i++) {
-        let range = this.blockRanges[i];
-        let oldContent = this.editor.document.getText(range);
-        let content = String(newBlocks[i]);
+      for (let i = 0; i < blocks.length; i++) {
+        let range = this.blockParts[i].range;
+        let oldContent = this.blockParts[i].content;
+        let content = blocks[i];
 
-        if (content != oldContent) edit.replace(range, content);
+        if (content != oldContent) {
+          edit.replace(range.range, content);
+          this.blockChanged = true;
+        }
       }
     });
+
+    this.blockParts.forEach((b, i) => (b.content = blocks[i]));
   }
 }
