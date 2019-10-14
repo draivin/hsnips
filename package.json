@@ -37,6 +37,11 @@
             },
             {
                 "category": "HyperSnips",
+                "command": "hsnips.openSnippetFile",
+                "title": "Open Snippet File"
+            },
+            {
+                "category": "HyperSnips",
                 "command": "hsnips.reloadSnippets",
                 "title": "Reload Snippets"
             }

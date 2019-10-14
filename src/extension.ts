@@ -63,6 +63,19 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
+    vscode.commands.registerCommand('hsnips.openSnippetFile', async () => {
+      let snippetDir = getSnippetDir();
+      let files = await readdirAsync(snippetDir);
+      let selectedFile = await vscode.window.showQuickPick(files);
+
+      if (selectedFile) {
+          let document = await vscode.workspace.openTextDocument(path.join(snippetDir, selectedFile));
+          vscode.window.showTextDocument(document);
+      }
+    })
+  );
+
+  context.subscriptions.push(
     vscode.commands.registerCommand('hsnips.reloadSnippets', () => loadSnippets())
   );
 
