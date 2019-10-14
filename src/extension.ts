@@ -40,6 +40,11 @@ async function loadSnippets() {
       if (language != 'all') snippetList.push(...globalSnippets);
     }
   }
+
+  // Sort snippets by descending priority.
+  for (let snippetList of SNIPPETS_BY_LANGUAGE.values()) {
+    snippetList.sort((a, b) => b.priority - a.priority);
+  }
 }
 
 function expandSnippet(

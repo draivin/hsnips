@@ -13,11 +13,13 @@ export class HSnippet {
   automatic = false;
   regexp?: RegExp;
   placeholders: number;
+  priority: number;
 
   constructor(header: IHSnippetHeader, generator: GeneratorFunction, placeholders: number) {
     this.description = header.description;
     this.generator = generator;
     this.placeholders = placeholders;
+    this.priority = header.priority || 0;
 
     if (header.trigger instanceof RegExp) {
       this.regexp = header.trigger;
@@ -36,6 +38,7 @@ export interface IHSnippetHeader {
   trigger: string | RegExp;
   description: string;
   flags: string;
+  priority?: number;
 }
 
 enum HSnippetPartType {

@@ -53,8 +53,15 @@
       ]
     },
     {
-      "match": ".*",
-      "name": "comment"
+      "match": "(priority) ?(-?\\d+)?",
+      "captures": {
+        "1": {
+          "name": "keyword.control"
+        },
+        "2": {
+          "name": "constant.numeric"
+        }
+      }
     }
   ],
   "repository": {

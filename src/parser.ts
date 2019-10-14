@@ -91,9 +91,10 @@ function parseSnippet(headerLine: string, lines: string[]): IHSnippetInfo {
 export function parse(content: string): HSnippet[] {
   let lines = content.split(/\r?\n/);
 
-  let snippetData = [];
+  let snippetInfos = [];
   let script = [];
   let isCode = false;
+  let priority = 0;
 
   while (lines.length > 0) {
     let line = lines.shift() as string;
@@ -106,18 +107,24 @@ export function parse(content: string): HSnippet[] {
       }
     } else if (line.startsWith('global')) {
       isCode = true;
+    } else if (line.startsWith('priority ')) {
+      priority = Number(line.substring('priority '.length).trim()) || 0;
     } else if (line.match(HEADER_REGEXP)) {
-      snippetData.push(parseSnippet(line, lines));
+      let info = parseSnippet(line, lines);
+      info.header.priority = priority;
+      snippetInfos.push(info);
+
+      priority = 0;
     }
   }
 
   script.push(`return [`);
-  for (let snippet of snippetData) {
+  for (let snippet of snippetInfos) {
     script.push(snippet.body);
     script.push(',');
   }
   script.push(`]`);
 
   let generators = new Function(script.join('\n'))();
-  return snippetData.map((s, i) => new HSnippet(s.header, generators[i], s.placeholders));
+  return snippetInfos.map((s, i) => new HSnippet(s.header, generators[i], s.placeholders));
 }
