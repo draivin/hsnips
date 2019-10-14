@@ -44,6 +44,7 @@ repository:
   snippet:
     patterns:
     -
+      contentName: meta.embedded.js
       begin: '``'
       beginCaptures:
         0:

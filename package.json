@@ -78,7 +78,10 @@
             {
                 "language": "hsnips",
                 "scopeName": "source.hsnips",
-                "path": "./syntaxes/hsnips.tmLanguage.json"
+                "path": "./syntaxes/hsnips.tmLanguage.json",
+                "embeddedLanguages": {
+                    "meta.embedded.js": "javascript"
+                }
             }
         ]
     },
