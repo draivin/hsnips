@@ -12,8 +12,8 @@ HyperSnips is a snippet engine for vscode heavily inspired by vim's
 ## Usage
 To use HyperSnips you create `.hsnips` files on a directory which depends on your platform:
 - Windows: `%APPDATA%\Code\User\hsnips\(language).hsnips`
-- Mac: `$HOME/Library/Application Support/Code/User/snippets/(language).hsnips`
-- Linux: `$HOME/.config/Code/User/snippets/(language).hsnips`
+- Mac: `$HOME/Library/Application Support/Code/User/hsnips/(language).hsnips`
+- Linux: `$HOME/.config/Code/User/hsnips/(language).hsnips`
 
 Or alternatively, you can open this directory by running the command `HyperSnips: Open snippets
 directory`.
