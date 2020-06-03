@@ -8,10 +8,12 @@ export class HSnippet {
   trigger: string;
   description: string;
   generator: GeneratorFunction;
-  automatic = false;
   regexp?: RegExp;
   placeholders: number;
   priority: number;
+
+  automatic = false;
+  multiline = false;
 
   constructor(header: IHSnippetHeader, generator: GeneratorFunction, placeholders: number) {
     this.description = header.description;
@@ -28,6 +30,10 @@ export class HSnippet {
 
     if (header.flags.includes('A')) {
       this.automatic = true;
+    }
+
+    if (header.flags.includes('M')) {
+      this.multiline = true;
     }
   }
 }

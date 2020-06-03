@@ -3,7 +3,7 @@
   "name": "comment",
   "patterns": [
     {
-      "begin": "^(snippet) ?(?:(`[^`]+`)|([\\S]+))?(?: (\"[^\"]+\"))?(?: ([A]*))?.*",
+      "begin": "^(snippet) ?(?:(`[^`]+`)|([\\S]+))?(?: (\"[^\"]+\"))?(?: ([AM]*))?.*",
       "beginCaptures": {
         "1": {
           "name": "keyword.control"

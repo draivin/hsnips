@@ -51,6 +51,8 @@ export function getCompletions(
   let contextRange = lineRange((match as RegExpMatchArray).index || 0, position);
   let context = document.getText(contextRange);
 
+  let longContext = null;
+
   let completions = [];
   for (let snippet of snippets) {
     let snippetMatches = snippet.trigger && context.endsWith(snippet.trigger);
@@ -71,9 +73,28 @@ export function getCompletions(
         prefixMatches = true;
       }
     } else if (snippet.regexp) {
-      let match = snippet.regexp.exec(line);
+      let regexContext = line;
+
+      if (snippet.multiline) {
+        if (!longContext)
+          longContext = document
+            .getText(
+              new vscode.Range(new vscode.Position(Math.max(position.line - 20, 0), 0), position)
+            )
+            .replace(/\r/g, '');
+
+        regexContext = longContext;
+      }
+
+      let match = snippet.regexp.exec(regexContext);
       if (match) {
-        snippetRange = lineRange(match.index, position);
+        let charOffset = match.index - regexContext.lastIndexOf('\n', match.index) - 1;
+        let lineOffset = match[0].split('\n').length - 1;
+
+        snippetRange = new vscode.Range(
+          new vscode.Position(position.line - lineOffset, charOffset),
+          position
+        );
         snippetMatches = true;
         matchGroups = match;
         label = match[0];
