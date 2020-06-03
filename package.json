@@ -100,9 +100,8 @@
     "devDependencies": {
         "@types/node": "^10.14.19",
         "@types/vscode": "^1.32.0",
-        "js-yaml": "^3.13.1",
-        "tslint": "^5.20.0",
-        "typescript": "^3.6.3"
+        "eslint": "^7.1.0",
+        "typescript": "^3.9.3"
     },
     "dependencies": {
         "open-file-explorer": "^1.0.2"
