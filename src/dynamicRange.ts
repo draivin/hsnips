@@ -5,7 +5,7 @@ type PositionDelta = { characterDelta: number; lineDelta: number };
 export enum GrowthType {
   Grow,
   FixLeft,
-  FixRight
+  FixRight,
 }
 
 export interface IChangeInfo {

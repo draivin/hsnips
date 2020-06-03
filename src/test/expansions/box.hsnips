@@ -1,0 +1,5 @@
+snippet box "Box" A
+┌``rv = '─'.repeat(t[0].length + 2)``┐
+│ $1 │
+└``rv = '─'.repeat(t[0].length + 2)``┘
+endsnippet
