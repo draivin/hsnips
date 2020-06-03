@@ -48,9 +48,17 @@ surrounded by backticks (`` ` ``).
 The flags field is a sequence of characters which modify the behavior of the snippet, the available
 flags are the following:
 
-- `A`: automatic snippet expansion, usually when typing snippets you have to press `tab` to trigger
-  the snippet, with the `A` flag the snippet will trigger on its own, it is specially useful for
-  regex snippets.
+- `A`: Automatic snippet expansion - Usually snippets are activated when the `tab` key is pressed,
+  with the `A` flag snippets will activate as soon as their trigger matches, it is specially useful
+  for regex snippets.
+
+- `i`: In-word expansion - By default, a snippet trigger will only match when the trigger is
+  preceded by whitespace characters. A snippet with this option is triggered regardless of the
+  preceding character, for example, a snippet can be triggered in the middle of a word.
+
+- `w`: Word boundary - With this option the snippet trigger will match when the trigger is a word
+  boundary character. Use this option, for example, to permit expansion where the trigger follows
+  punctuation without expanding suffixes of larger words.
 
 ### Snippet body
 The body is the text that will replace the trigger when the snippet is expanded, as in usual

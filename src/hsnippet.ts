@@ -1,5 +1,3 @@
-import { DynamicRange, IChangeInfo } from './dynamicRange';
-
 export type GeneratorResult = [(string | { block: number })[], string[]];
 export type GeneratorFunction = (texts: string[], matchGroups: string[]) => GeneratorResult;
 
@@ -12,8 +10,11 @@ export class HSnippet {
   placeholders: number;
   priority: number;
 
+  // UltiSnips-like options.
   automatic = false;
   multiline = false;
+  inword = false;
+  wordboundary = false;
 
   constructor(header: IHSnippetHeader, generator: GeneratorFunction, placeholders: number) {
     this.description = header.description;
@@ -28,13 +29,10 @@ export class HSnippet {
       this.trigger = header.trigger;
     }
 
-    if (header.flags.includes('A')) {
-      this.automatic = true;
-    }
-
-    if (header.flags.includes('M')) {
-      this.multiline = true;
-    }
+    if (header.flags.includes('A')) this.automatic = true;
+    if (header.flags.includes('M')) this.multiline = true;
+    if (header.flags.includes('i')) this.inword = true;
+    if (header.flags.includes('w')) this.wordboundary = true;
   }
 }
 

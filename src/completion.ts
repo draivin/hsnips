@@ -36,7 +36,7 @@ function matchSuffixPrefix(context: string, trigger: string) {
     trigger = trigger.substring(0, trigger.length - 1);
   }
 
-  return false;
+  return null;
 }
 
 export function getCompletions(
@@ -51,22 +51,35 @@ export function getCompletions(
   let contextRange = lineRange((match as RegExpMatchArray).index || 0, position);
   let context = document.getText(contextRange);
 
+  let wordRange = document.getWordRangeAtPosition(position) || contextRange;
+  let wordContext = document.getText(wordRange);
+
   let longContext = null;
 
   let completions = [];
   for (let snippet of snippets) {
-    let snippetMatches = snippet.trigger && context.endsWith(snippet.trigger);
+    let snippetMatches = false;
     let snippetRange = contextRange;
     let prefixMatches = false;
 
     let matchGroups: string[] = [];
     let label = snippet.trigger;
 
-    // TODO: Perhaps transform every trigger into a regexp and avoid the case analysis.
     if (snippet.trigger) {
-      let matchingPrefix = snippetMatches
-        ? snippet.trigger
-        : matchSuffixPrefix(context, snippet.trigger);
+      let matchingPrefix = null;
+
+      if (snippet.inword) {
+        snippetMatches = context.endsWith(snippet.trigger);
+        matchingPrefix = snippetMatches
+          ? snippet.trigger
+          : matchSuffixPrefix(context, snippet.trigger);
+      } else if (snippet.wordboundary) {
+        snippetMatches = wordContext == snippet.trigger;
+        matchingPrefix = snippet.trigger.startsWith(wordContext) ? wordContext : null;
+      } else {
+        snippetMatches = context == snippet.trigger;
+        matchingPrefix = snippet.trigger.startsWith(context) ? context : null;
+      }
 
       if (matchingPrefix) {
         snippetRange = new vscode.Range(position.translate(0, -matchingPrefix.length), position);
