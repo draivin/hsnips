@@ -89,12 +89,20 @@ export function getCompletions(
       let regexContext = line;
 
       if (snippet.multiline) {
-        if (!longContext)
+        if (!longContext) {
+          let numberPrevLines = vscode.workspace
+            .getConfiguration('hsnips')
+            .get('multiLineContext') as number;
+
           longContext = document
             .getText(
-              new vscode.Range(new vscode.Position(Math.max(position.line - 20, 0), 0), position)
+              new vscode.Range(
+                new vscode.Position(Math.max(position.line - numberPrevLines, 0), 0),
+                position
+              )
             )
             .replace(/\r/g, '');
+        }
 
         regexContext = longContext;
       }
