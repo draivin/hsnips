@@ -69,7 +69,7 @@ export class HSnippetInstance {
       );
     }
 
-    // For a lack of creativity, I'm referring to the partes of the array that are returned by the
+    // For a lack of creativity, I'm referring to the parts of the array that are returned by the
     // snippet function as 'sections', and the result of the interpolated javascript in the snippets
     // are referred to as 'blocks', as in code blocks.
     let [sections, blocks] = generatorResult;
