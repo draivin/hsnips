@@ -27,7 +27,7 @@ interface IHSnippetInfo {
 }
 
 function escapeString(string: string) {
-  return string.replace('"', '\\"').replace('\\', '\\\\');
+  return string.replace(/"/g, '\\"').replace(/\\/g, '\\\\');
 }
 
 function countPlaceholders(string: string) {
