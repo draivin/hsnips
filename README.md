@@ -59,16 +59,18 @@ flags are the following:
   with the `A` flag snippets will activate as soon as their trigger matches, it is specially useful
   for regex snippets.
 
-- `i`: In-word expansion - By default, a snippet trigger will only match when the trigger is
+- `i`: In-word expansion\* - By default, a snippet trigger will only match when the trigger is
   preceded by whitespace characters. A snippet with this option is triggered regardless of the
   preceding character, for example, a snippet can be triggered in the middle of a word.
 
-- `w`: Word boundary - With this option the snippet trigger will match when the trigger is a word
+- `w`: Word boundary\* - With this option the snippet trigger will match when the trigger is a word
   boundary character. Use this option, for example, to permit expansion where the trigger follows
   punctuation without expanding suffixes of larger words.
 
 - `M`: Multi-line mode - By default, regex matches will only match content on the current line, when
   this option is enabled the last `hsnips.multiLineContext` lines will be available for matching.
+
+\*: This flag will only affect snippets which have non-regex triggers.
 
 ### Snippet body
 
