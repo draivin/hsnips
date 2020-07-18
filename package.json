@@ -2,7 +2,7 @@
     "name": "hsnips",
     "displayName": "HyperSnips",
     "icon": "images/hypersnips.png",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "publisher": "draivin",
     "repository": {
         "type": "git",
