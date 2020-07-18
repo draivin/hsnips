@@ -183,7 +183,6 @@ export function activate(context: vscode.ExtensionContext) {
         if (!snippets) snippets = SNIPPETS_BY_LANGUAGE.get('all');
         if (!snippets) return;
 
-        console.log('hello');
         // When getCompletions returns an array it means no auto-expansion was matched for the
         // current context, in this case show the snippet list to the user.
         let completions = getCompletions(document, position, snippets);
