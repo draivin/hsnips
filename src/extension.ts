@@ -131,8 +131,30 @@ export function activate(context: vscode.ExtensionContext) {
   // Forward all document changes so that the active snippet can update its related blocks.
   context.subscriptions.push(
     vscode.workspace.onDidChangeTextDocument((e) => {
-      if (!SNIPPET_STACK.length || SNIPPET_STACK[0].editor.document != e.document) return;
-      SNIPPET_STACK[0].update(e.contentChanges);
+      if (SNIPPET_STACK.length && SNIPPET_STACK[0].editor.document == e.document) {
+        SNIPPET_STACK[0].update(e.contentChanges);
+      }
+
+      let mainChange = e.contentChanges[0];
+      // When text is added this field is not empty.
+      if (!mainChange.text) return;
+
+      let snippets = SNIPPETS_BY_LANGUAGE.get(e.document.languageId.toLowerCase());
+      if (!snippets) snippets = SNIPPETS_BY_LANGUAGE.get('all');
+      if (!snippets) return;
+
+      let mainChangePosition = mainChange.range.end.translate(0, mainChange.text.length);
+      let completions = getCompletions(e.document, mainChangePosition, snippets);
+
+      // When an automatic completion is matched it is returned as an element, we check for this by
+      // using !isArray, and then expand the snippet.
+      if (completions && !Array.isArray(completions)) {
+        let editor = vscode.window.activeTextEditor;
+        if (editor && e.document == editor.document) {
+          expandSnippet(completions, editor);
+          return;
+        }
+      }
     })
   );
 
@@ -154,37 +176,21 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  // Trigger snippet on every reasonable ascii character.
-  const triggers = [];
-  for (let i = 32; i <= 126; i++) {
-    triggers.push(String.fromCharCode(i));
-  }
-
   context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(
-      [{ scheme: 'untitled' }, { scheme: 'file' }],
-      {
-        provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
-          let snippets = SNIPPETS_BY_LANGUAGE.get(document.languageId.toLowerCase());
-          if (!snippets) snippets = SNIPPETS_BY_LANGUAGE.get('all');
-          if (!snippets) return;
+    vscode.languages.registerCompletionItemProvider([{ scheme: 'untitled' }, { scheme: 'file' }], {
+      provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
+        let snippets = SNIPPETS_BY_LANGUAGE.get(document.languageId.toLowerCase());
+        if (!snippets) snippets = SNIPPETS_BY_LANGUAGE.get('all');
+        if (!snippets) return;
 
-          let completions = getCompletions(document, position, snippets);
-
-          if (!completions) return;
-
-          if (Array.isArray(completions)) {
-            return completions.map((c) => c.toCompletionItem());
-          }
-
-          let editor = vscode.window.activeTextEditor;
-          if (editor && document == editor.document) {
-            expandSnippet(completions, editor);
-            return;
-          }
-        },
+        console.log('hello');
+        // When getCompletions returns an array it means no auto-expansion was matched for the
+        // current context, in this case show the snippet list to the user.
+        let completions = getCompletions(document, position, snippets);
+        if (completions && Array.isArray(completions)) {
+          return completions.map((c) => c.toCompletionItem());
+        }
       },
-      ...triggers
-    )
+    })
   );
 }

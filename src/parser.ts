@@ -10,7 +10,7 @@ function parseSnippetHeader(header: string): IHSnippetHeader {
   let trigger: string | RegExp = match[2];
   if (match[1]) {
     if (!match[1].endsWith('$')) match[1] += '$';
-    trigger = new RegExp(match[1]);
+    trigger = new RegExp(match[1], 'm');
   }
 
   return {
