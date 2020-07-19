@@ -17,6 +17,8 @@ const readdirAsync = util.promisify(fs.readdir);
 const existsAsync = util.promisify(fs.exists);
 const mkdirAsync = util.promisify(fs.mkdir);
 
+let insertingSnippet = false;
+
 async function loadSnippets() {
   SNIPPETS_BY_LANGUAGE.clear();
 
@@ -69,8 +71,10 @@ export function expandSnippet(
     insertionRange = completion.range;
   }
 
+  insertingSnippet = true;
   editor.insertSnippet(snippetInstance.snippetString, insertionRange).then(() => {
     if (snippetInstance.selectedPlaceholder != 0) SNIPPET_STACK.unshift(snippetInstance);
+    insertingSnippet = false;
   });
 }
 
@@ -146,6 +150,8 @@ export function activate(context: vscode.ExtensionContext) {
       if (SNIPPET_STACK.length && SNIPPET_STACK[0].editor.document == e.document) {
         SNIPPET_STACK[0].update(e.contentChanges);
       }
+
+      if (insertingSnippet) return;
 
       let mainChange = e.contentChanges[0];
       // When text is added this field is not empty.
