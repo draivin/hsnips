@@ -49,7 +49,14 @@ async function loadSnippets() {
   }
 }
 
-export function expandSnippet(completion: CompletionInfo, editor: vscode.TextEditor) {
+// This function may be called after a snippet expansion, in which case the original text was
+// already replaced by an empty string, or it may be called directly, as in the case of an automatic
+// expansion, in which case we should pass `replace = true` so that the original text may be replaced.
+export function expandSnippet(
+  completion: CompletionInfo,
+  editor: vscode.TextEditor,
+  replace = false
+) {
   let snippetInstance = new HSnippetInstance(
     completion.snippet,
     editor,
@@ -57,7 +64,12 @@ export function expandSnippet(completion: CompletionInfo, editor: vscode.TextEdi
     completion.groups
   );
 
-  editor.insertSnippet(snippetInstance.snippetString, completion.range).then(() => {
+  let insertionRange: vscode.Range | vscode.Position = completion.range.start;
+  if (replace) {
+    insertionRange = completion.range;
+  }
+
+  editor.insertSnippet(snippetInstance.snippetString, insertionRange).then(() => {
     if (snippetInstance.selectedPlaceholder != 0) SNIPPET_STACK.unshift(snippetInstance);
   });
 }
@@ -151,7 +163,7 @@ export function activate(context: vscode.ExtensionContext) {
       if (completions && !Array.isArray(completions)) {
         let editor = vscode.window.activeTextEditor;
         if (editor && e.document == editor.document) {
-          expandSnippet(completions, editor);
+          expandSnippet(completions, editor, true);
           return;
         }
       }

@@ -17,7 +17,7 @@ export class CompletionInfo {
 
   toCompletionItem() {
     let completionItem = new vscode.CompletionItem(this.label);
-    completionItem.range = new vscode.Range(this.range.end, this.range.end);
+    completionItem.range = this.range;
     completionItem.detail = this.snippet.description;
     completionItem.insertText = '';
     completionItem.command = {
@@ -52,6 +52,9 @@ export function getCompletions(
   let context = document.getText(contextRange);
 
   let wordRange = document.getWordRangeAtPosition(position) || contextRange;
+  if (wordRange.end != position) {
+    wordRange = new vscode.Range(wordRange.start, position);
+  }
   let wordContext = document.getText(wordRange);
 
   let longContext = null;
