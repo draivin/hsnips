@@ -154,14 +154,15 @@ export function activate(context: vscode.ExtensionContext) {
       if (insertingSnippet) return;
 
       let mainChange = e.contentChanges[0];
-      // When text is added this field is not empty.
-      if (!mainChange.text) return;
+
+      // Let's try to detect only events that come from keystrokes.
+      if (mainChange.text.length != 1) return;
 
       let snippets = SNIPPETS_BY_LANGUAGE.get(e.document.languageId.toLowerCase());
       if (!snippets) snippets = SNIPPETS_BY_LANGUAGE.get('all');
       if (!snippets) return;
 
-      let mainChangePosition = mainChange.range.end.translate(0, mainChange.text.length);
+      let mainChangePosition = mainChange.range.start.translate(0, mainChange.text.length);
       let completions = getCompletions(e.document, mainChangePosition, snippets);
 
       // When an automatic completion is matched it is returned as an element, we check for this by
