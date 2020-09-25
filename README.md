@@ -69,6 +69,10 @@ flags are the following:
 
 - `M`: Multi-line mode - By default, regex matches will only match content on the current line, when
   this option is enabled the last `hsnips.multiLineContext` lines will be available for matching.
+  
+- `b`: Beginning of line expansion - A snippet with this option is expanded only if the
+  tab trigger is the first word on the line. In other words, if only whitespace precedes the tab
+  trigger, expand.
 
 \*: This flag will only affect snippets which have non-regex triggers.
 
