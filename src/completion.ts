@@ -50,6 +50,9 @@ export function getCompletions(
   let match = line.match(/\S*$/);
   let contextRange = lineRange((match as RegExpMatchArray).index || 0, position);
   let context = document.getText(contextRange);
+  let precedingContextRange = new vscode.Range(position.line, 0, position.line, (match as RegExpMatchArray).index || 0);
+  let precedingContext = document.getText(precedingContextRange);
+  let isPrecedingContextWhitespace = precedingContext.match(/^\s*$/) != null;
 
   let wordRange = document.getWordRangeAtPosition(position) || contextRange;
   if (wordRange.end != position) {
@@ -79,6 +82,9 @@ export function getCompletions(
       } else if (snippet.wordboundary) {
         snippetMatches = wordContext == snippet.trigger;
         matchingPrefix = snippet.trigger.startsWith(wordContext) ? wordContext : null;
+      } else if (snippet.beginningofline) {
+        snippetMatches = context.endsWith(snippet.trigger) && isPrecedingContextWhitespace;
+        matchingPrefix = snippet.trigger.startsWith(context) && isPrecedingContextWhitespace ? context : null;
       } else {
         snippetMatches = context == snippet.trigger;
         matchingPrefix = snippet.trigger.startsWith(context) ? context : null;
