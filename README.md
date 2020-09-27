@@ -67,7 +67,7 @@ flags are the following:
   boundary character. Use this option, for example, to permit expansion where the trigger follows
   punctuation without expanding suffixes of larger words.
 
-- `b`: Beginning\* of line expansion - A snippet with this option is expanded only if the
+- `b`: Beginning of line expansion\* - A snippet with this option is expanded only if the
   tab trigger is the first word on the line. In other words, if only whitespace precedes the tab
   trigger, expand.
 
