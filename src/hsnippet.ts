@@ -1,5 +1,9 @@
 export type GeneratorResult = [(string | { block: number })[], string[]];
-export type GeneratorFunction = (texts: string[], matchGroups: string[]) => GeneratorResult;
+export type GeneratorFunction = (
+  texts: string[],
+  matchGroups: string[],
+  global: any
+) => GeneratorResult;
 
 // Represents a snippet template from which new instances can be created.
 export class HSnippet {

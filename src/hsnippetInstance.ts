@@ -30,6 +30,31 @@ class HSnippetPart {
   }
 }
 
+let packageMap = new Map<string, any>();
+function requireGlobal(packageName: string) {
+  if (packageMap.has(packageName)) {
+    return packageMap.get(packageName);
+  }
+
+  var childProcess = require('child_process');
+  var path = require('path');
+  var fs = require('fs');
+
+  var globalNodeModules = childProcess.execSync('npm root -g').toString().trim();
+  var packageDir = path.join(globalNodeModules, packageName);
+  if (!fs.existsSync(packageDir))
+    packageDir = path.join(globalNodeModules, 'npm/node_modules', packageName); //find package required by old npm
+
+  if (!fs.existsSync(packageDir))
+    throw new Error("Cannot find global module '" + packageName + "'");
+
+  var packageMeta = JSON.parse(fs.readFileSync(path.join(packageDir, 'package.json')).toString());
+  var main = path.join(packageDir, packageMeta.main);
+
+  packageMap.set(packageName, require(main));
+  return packageMap.get(packageName);
+}
+
 export class HSnippetInstance {
   type: HSnippet;
   matchGroups: string[];
@@ -61,7 +86,8 @@ export class HSnippetInstance {
     try {
       generatorResult = type.generator(
         new Array(this.type.placeholders).fill(''),
-        this.matchGroups
+        this.matchGroups,
+        requireGlobal
       );
     } catch (e) {
       vscode.window.showWarningMessage(
@@ -215,7 +241,7 @@ export class HSnippetInstance {
       .filter((p) => p.type == HSnippetPartType.Placeholder)
       .map((p) => p.content);
 
-    let blocks = this.type.generator(placeholderContents, this.matchGroups)[1].map(String);
+    let blocks = this.type.generator(placeholderContents, this.matchGroups, global)[1].map(String);
 
     this.editor.edit((edit) => {
       for (let i = 0; i < blocks.length; i++) {
