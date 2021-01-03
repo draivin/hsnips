@@ -99,6 +99,8 @@ Inside the code interpolation, you have access to a few special variables:
 Additionally, every variable defined in one code block will be available in all the subsequent code
 blocks in the snippet.
 
+The `require` function can also be used to import NodeJS modules.
+
 ## Examples
 
 - Simple snippet which greets you with the current date and time
