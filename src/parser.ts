@@ -37,7 +37,7 @@ function countPlaceholders(string: string) {
 function parseSnippet(headerLine: string, lines: string[]): IHSnippetInfo {
   let header = parseSnippetHeader(headerLine);
 
-  let script = [`(t, m) => {`];
+  let script = [`(require, t, m) => {`];
   script.push(`let rv = "";`);
   script.push(`let result = [];`);
   script.push(`let blockResults = [];`);
@@ -125,6 +125,10 @@ export function parse(content: string): HSnippet[] {
   }
   script.push(`]`);
 
-  let generators = new Function(script.join('\n'))();
+  let generators = new Function(script.join('\n'))().map((generator: Function) => {
+    // for some reason, `require` is not defined inside the snippet code blocks,
+    // so we're going to bind the it onto the function
+    return generator.bind(null, require) as GeneratorFunction;
+  });
   return snippetInfos.map((s, i) => new HSnippet(s.header, generators[i], s.placeholders));
 }
