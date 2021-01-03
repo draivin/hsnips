@@ -37,7 +37,7 @@ function countPlaceholders(string: string) {
 function parseSnippet(headerLine: string, lines: string[]): IHSnippetInfo {
   let header = parseSnippetHeader(headerLine);
 
-  let script = [`(require, t, m) => {`];
+  let script = [`(require, t, m, w, path) => {`];
   script.push(`let rv = "";`);
   script.push(`let result = [];`);
   script.push(`let blockResults = [];`);

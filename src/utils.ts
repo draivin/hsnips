@@ -36,3 +36,7 @@ export function applyOffset(
 
   return position.with(newLine, newChar);
 }
+
+export function getWorkspaceUri(): string {
+  return vscode.workspace.workspaceFolders?.[0]?.uri?.toString() ?? "";
+}
