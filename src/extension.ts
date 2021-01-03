@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync } from 'fs';
 import * as path from 'path';
-import * as util from 'util';
 import openExplorer = require('open-file-explorer');
 import { HSnippet } from './hsnippet';
 import { HSnippetInstance } from './hsnippetInstance';
@@ -12,26 +11,21 @@ import { getCompletions, CompletionInfo } from './completion';
 const SNIPPETS_BY_LANGUAGE: Map<string, HSnippet[]> = new Map();
 const SNIPPET_STACK: HSnippetInstance[] = [];
 
-const readFileAsync = util.promisify(fs.readFile);
-const readdirAsync = util.promisify(fs.readdir);
-const existsAsync = util.promisify(fs.exists);
-const mkdirAsync = util.promisify(fs.mkdir);
-
 let insertingSnippet = false;
 
 async function loadSnippets() {
   SNIPPETS_BY_LANGUAGE.clear();
 
   let snippetDir = getSnippetDir();
-  if (!(await existsAsync(snippetDir))) {
-    await mkdirAsync(snippetDir);
+  if (!(existsSync(snippetDir))) {
+    mkdirSync(snippetDir);
   }
 
-  for (let file of await readdirAsync(snippetDir)) {
+  for (let file of readdirSync(snippetDir)) {
     if (path.extname(file).toLowerCase() != '.hsnips') continue;
 
     let filePath = path.join(snippetDir, file);
-    let fileData = await readFileAsync(filePath, 'utf8');
+    let fileData = readFileSync(filePath, 'utf8');
 
     let language = path.basename(file, '.hsnips').toLowerCase();
 
@@ -88,7 +82,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('hsnips.openSnippetFile', async () => {
       let snippetDir = getSnippetDir();
-      let files = await readdirAsync(snippetDir);
+      let files = readdirSync(snippetDir);
       let selectedFile = await vscode.window.showQuickPick(files);
 
       if (selectedFile) {
