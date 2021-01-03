@@ -95,6 +95,8 @@ Inside the code interpolation, you have access to a few special variables:
   defined in the snippet block. You can use it to dynamically change the snippet content.
 - `m`: An array containing the match groups of your regular expression trigger, or an empty array if
   the trigger is not a regular expression.
+- `w`: A URI string of the currently opened workspace, or an empty string if no workspace is open.
+- `path`: A URI string of the current document. (untitled documents have the scheme `untitled`)
 
 Additionally, every variable defined in one code block will be available in all the subsequent code
 blocks in the snippet.
@@ -118,5 +120,13 @@ snippet box "Box" A
 ``rv = '┌' + '─'.repeat(t[0].length + 2) + '┐'``
 │ $1 │
 ``rv = '└' + '─'.repeat(t[0].length + 2) + '┘'``
+endsnippet
+```
+
+- Snippet to insert the current filename
+
+```hsnips
+snippet filename "Current Filename"
+``rv = require('path').basename(path)``
 endsnippet
 ```

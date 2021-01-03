@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { DynamicRange, GrowthType, IChangeInfo } from './dynamicRange';
-import { applyOffset } from './utils';
+import { applyOffset, getWorkspaceUri } from './utils';
 import { HSnippet, GeneratorResult } from './hsnippet';
 
 enum HSnippetPartType {
@@ -61,7 +61,9 @@ export class HSnippetInstance {
     try {
       generatorResult = type.generator(
         new Array(this.type.placeholders).fill(''),
-        this.matchGroups
+        this.matchGroups,
+        getWorkspaceUri(),
+        editor.document.uri.toString()
       );
     } catch (e) {
       vscode.window.showWarningMessage(
@@ -215,7 +217,12 @@ export class HSnippetInstance {
       .filter((p) => p.type == HSnippetPartType.Placeholder)
       .map((p) => p.content);
 
-    let blocks = this.type.generator(placeholderContents, this.matchGroups)[1].map(String);
+    let blocks = this.type.generator(
+      placeholderContents,
+      this.matchGroups,
+      getWorkspaceUri(),
+      this.editor.document.uri.toString()
+    )[1].map(String);
 
     this.editor.edit((edit) => {
       for (let i = 0; i < blocks.length; i++) {
