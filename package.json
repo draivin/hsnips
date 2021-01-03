@@ -4,6 +4,7 @@
     "icon": "images/hypersnips.png",
     "version": "0.1.9",
     "publisher": "draivin",
+    "license": "MIT",
     "repository": {
         "type": "git",
         "url": "https://github.com/draivin/hsnips"
@@ -110,10 +111,10 @@
         "watch": "tsc -watch -p ./"
     },
     "devDependencies": {
-        "@types/node": "^10.14.19",
-        "@types/vscode": "^1.32.0",
-        "eslint": "^7.1.0",
-        "typescript": "^3.9.3"
+        "@types/node": "^10.17.50",
+        "@types/vscode": "^1.52.0",
+        "eslint": "^7.17.0",
+        "typescript": "^3.9.7"
     },
     "dependencies": {
         "open-file-explorer": "^1.0.2"
