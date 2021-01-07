@@ -13,7 +13,7 @@
         "url": "https://github.com/draivin/hsnips/issues"
     },
     "engines": {
-        "vscode": "^1.32.0"
+        "vscode": "^1.52.0"
     },
     "categories": [
         "Snippets",
