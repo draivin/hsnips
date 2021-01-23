@@ -17,7 +17,7 @@ async function loadSnippets() {
   SNIPPETS_BY_LANGUAGE.clear();
 
   let snippetDir = getSnippetDir();
-  if (!(existsSync(snippetDir))) {
+  if (!existsSync(snippetDir)) {
     mkdirSync(snippetDir);
   }
 
@@ -46,12 +46,13 @@ async function loadSnippets() {
 }
 
 // This function may be called after a snippet expansion, in which case the original text was
-// already replaced by an empty string, or it may be called directly, as in the case of an automatic
-// expansion, in which case we should pass `replace = true` so that the original text may be replaced.
-export function expandSnippet(
+// replaced by the snippet label, or it may be called directly, as in the case of an automatic
+// expansion. Depending on which case it is, we have to delete a different editor range before
+// triggering the real hsnip expansion.
+export async function expandSnippet(
   completion: CompletionInfo,
   editor: vscode.TextEditor,
-  replace = false
+  snippetExpansion = false
 ) {
   let snippetInstance = new HSnippetInstance(
     completion.snippet,
@@ -61,15 +62,28 @@ export function expandSnippet(
   );
 
   let insertionRange: vscode.Range | vscode.Position = completion.range.start;
-  if (replace) {
-    insertionRange = completion.range;
-  }
+
+  // The separate deletion is a workaround for a VsCodeVim bug, where when we trigger a snippet which
+  // has a replacement range, it will go into NORMAL mode, see issues #28 and #36.
+
+  // TODO: Go back to inserting the snippet and removing in a single command once the VsCodeVim bug
+  // is fixed.
 
   insertingSnippet = true;
-  editor.insertSnippet(snippetInstance.snippetString, insertionRange).then(() => {
-    if (snippetInstance.selectedPlaceholder != 0) SNIPPET_STACK.unshift(snippetInstance);
-    insertingSnippet = false;
+  await editor.edit(
+    (eb) => {
+      eb.delete(snippetExpansion ? completion.completionRange : completion.range);
+    },
+    { undoStopAfter: false, undoStopBefore: !snippetExpansion }
+  );
+
+  await editor.insertSnippet(snippetInstance.snippetString, insertionRange, {
+    undoStopAfter: false,
+    undoStopBefore: false,
   });
+
+  if (snippetInstance.selectedPlaceholder != 0) SNIPPET_STACK.unshift(snippetInstance);
+  insertingSnippet = false;
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -133,7 +147,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerTextEditorCommand(
       'hsnips.expand',
       (editor, _, completion: CompletionInfo) => {
-        expandSnippet(completion, editor);
+        expandSnippet(completion, editor, true);
       }
     )
   );
@@ -164,7 +178,7 @@ export function activate(context: vscode.ExtensionContext) {
       if (completions && !Array.isArray(completions)) {
         let editor = vscode.window.activeTextEditor;
         if (editor && e.document == editor.document) {
-          expandSnippet(completions, editor, true);
+          expandSnippet(completions, editor);
           return;
         }
       }

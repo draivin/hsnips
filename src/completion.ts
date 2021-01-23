@@ -4,6 +4,7 @@ import { HSnippet } from './hsnippet';
 
 export class CompletionInfo {
   range: vscode.Range;
+  completionRange: vscode.Range;
   snippet: HSnippet;
   label: string;
   groups: string[];
@@ -12,6 +13,7 @@ export class CompletionInfo {
     this.snippet = snippet;
     this.label = label;
     this.range = range;
+    this.completionRange = new vscode.Range(range.start, range.start.translate(0, label.length));
     this.groups = groups;
   }
 
@@ -19,7 +21,7 @@ export class CompletionInfo {
     let completionItem = new vscode.CompletionItem(this.label);
     completionItem.range = this.range;
     completionItem.detail = this.snippet.description;
-    completionItem.insertText = '';
+    completionItem.insertText = this.label;
     completionItem.command = {
       command: 'hsnips.expand',
       title: 'expand',
@@ -50,7 +52,12 @@ export function getCompletions(
   let match = line.match(/\S*$/);
   let contextRange = lineRange((match as RegExpMatchArray).index || 0, position);
   let context = document.getText(contextRange);
-  let precedingContextRange = new vscode.Range(position.line, 0, position.line, (match as RegExpMatchArray).index || 0);
+  let precedingContextRange = new vscode.Range(
+    position.line,
+    0,
+    position.line,
+    (match as RegExpMatchArray).index || 0
+  );
   let precedingContext = document.getText(precedingContextRange);
   let isPrecedingContextWhitespace = precedingContext.match(/^\s*$/) != null;
 
@@ -84,7 +91,8 @@ export function getCompletions(
         matchingPrefix = snippet.trigger.startsWith(wordContext) ? wordContext : null;
       } else if (snippet.beginningofline) {
         snippetMatches = context.endsWith(snippet.trigger) && isPrecedingContextWhitespace;
-        matchingPrefix = snippet.trigger.startsWith(context) && isPrecedingContextWhitespace ? context : null;
+        matchingPrefix =
+          snippet.trigger.startsWith(context) && isPrecedingContextWhitespace ? context : null;
       } else {
         snippetMatches = context == snippet.trigger;
         matchingPrefix = snippet.trigger.startsWith(context) ? context : null;
