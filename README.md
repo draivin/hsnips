@@ -6,6 +6,10 @@
 
 这是一个由 OrangeX4 魔改过的 HyperSnips, 增加了**对 Markdown 和 Latex 中数学环境匹配**的功能.
 
+**使用这个插件前, 请把原来的 HyperSnips 插件删除!**
+**使用这个插件前, 请把原来的 HyperSnips 插件删除!**
+**使用这个插件前, 请把原来的 HyperSnips 插件删除!**
+
 看个小例子:
 
 ``` hsnips
