@@ -1,13 +1,13 @@
 {
-    "name": "hsnips",
-    "displayName": "HyperSnips",
+    "name": "hsnips-for-math",
+    "displayName": "HyperSnips for Math",
     "icon": "images/hypersnips.png",
-    "version": "0.1.11",
-    "publisher": "draivin",
+    "version": "0.1.12",
+    "publisher": "OrangeX4",
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/draivin/hsnips"
+        "url": "https://github.com/OrangeX4/hsnips"
     },
     "bugs": {
         "url": "https://github.com/draivin/hsnips/issues"

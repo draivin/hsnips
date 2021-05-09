@@ -21,6 +21,7 @@ export class HSnippet {
   inword = false;
   wordboundary = false;
   beginningofline = false;
+  math = false;
 
   constructor(header: IHSnippetHeader, generator: GeneratorFunction, placeholders: number) {
     this.description = header.description;
@@ -40,6 +41,7 @@ export class HSnippet {
     if (header.flags.includes('i')) this.inword = true;
     if (header.flags.includes('w')) this.wordboundary = true;
     if (header.flags.includes('b')) this.beginningofline = true;
+    if (header.flags.includes('m')) this.math = true;
   }
 }
 
