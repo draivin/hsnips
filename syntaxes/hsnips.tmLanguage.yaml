@@ -1,62 +1,60 @@
-scopeName: "source.hsnips"
+scopeName: 'source.hsnips'
 
 name: comment
 patterns:
--
-  begin: '^(snippet) ?(?:(`[^`]+`)|([\S]+))?(?: ("[^"]+"))?(?: ([A]*))?.*'
-  beginCaptures:
-    1:
-      name: keyword.control
-    2:
-      name: entity.name.function
-    3:
-      name: string.regexp
-    4:
-      name: string.quoted.double
-    5:
-      name: constant.language
-  end: '^endsnippet'
-  endCaptures:
-    0:
-      name: keyword.control
-  patterns:
-  -
-    include: '#snippet'
+  - match: '^#.*'
+    captures:
+      0:
+        name: comment
 
--
-  begin: '^global'
-  beginCaptures:
-    0:
-      name: keyword.control
-  end: '^endglobal'
-  endCaptures:
-    0:
-      name: keyword.control
-  patterns:
-  -
-    include: 'source.js'
+  - begin: '^(snippet) ?(?:(`[^`]+`)|([\S]+))?(?: ("[^"]+"))?(?: ([A]*))?.*'
+    beginCaptures:
+      1:
+        name: keyword.control
+      2:
+        name: entity.name.function
+      3:
+        name: string.regexp
+      4:
+        name: string.quoted.double
+      5:
+        name: constant.language
+    end: '^endsnippet'
+    endCaptures:
+      0:
+        name: keyword.control
+    patterns:
+      - include: '#snippet'
 
--
-  match: '(priority) ?(-?\d+)?'
-  captures:
-    1:
-      name: keyword.control
-    2:
-      name: constant.numeric
+  - begin: '^global'
+    beginCaptures:
+      0:
+        name: keyword.control
+    end: '^endglobal'
+    endCaptures:
+      0:
+        name: keyword.control
+    patterns:
+      - include: 'source.js'
+
+  - match: '(priority) ?(-?\d+)?'
+    captures:
+      1:
+        name: keyword.control
+      2:
+        name: constant.numeric
 
 repository:
   snippet:
     patterns:
-    -
-      contentName: meta.embedded.js
-      begin: '``'
-      beginCaptures:
-        0:
-          name: string.interpolated
-      end: '``'
-      endCaptures:
-        0:
-          name: string.interpolated
-      patterns:
-      -
-        include: 'source.js'
+      - contentName: meta.embedded.js
+        begin: '``'
+        beginCaptures:
+          0:
+            name: string.interpolated
+        end: '``'
+        endCaptures:
+          0:
+            name: string.interpolated
+        patterns:
+          - include: 'source.js'

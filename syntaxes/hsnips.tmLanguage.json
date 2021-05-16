@@ -3,7 +3,15 @@
   "name": "comment",
   "patterns": [
     {
-      "begin": "^(snippet) ?(?:(`[^`]+`)|([\\S]+))?(?: (\"[^\"]+\"))?(?: ([AMiwb]*))?.*",
+      "match": "^#.*",
+      "captures": {
+        "0": {
+          "name": "comment"
+        }
+      }
+    },
+    {
+      "begin": "^(snippet) ?(?:(`[^`]+`)|([\\S]+))?(?: (\"[^\"]+\"))?(?: ([A]*))?.*",
       "beginCaptures": {
         "1": {
           "name": "keyword.control"

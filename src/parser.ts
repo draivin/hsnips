@@ -26,8 +26,11 @@ interface IHSnippetInfo {
   header: IHSnippetHeader;
 }
 
+// First replacement handles backslash characters, as the string will be inserted using vscode's
+// snippet engine, we should double down on every backslash, the second replacement handles double
+// quotes, as our snippet will be transformed into a javascript string surrounded by double quotes.
 function escapeString(string: string) {
-  return string.replace(/"/g, '\\"').replace(/\\/g, '\\\\');
+  return string.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
 function countPlaceholders(string: string) {
@@ -105,6 +108,8 @@ export function parse(content: string): HSnippet[] {
       } else {
         script.push(line);
       }
+    } else if (line.startsWith('#')) {
+      continue;
     } else if (line.startsWith('global')) {
       isCode = true;
     } else if (line.startsWith('priority ')) {
