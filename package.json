@@ -63,22 +63,17 @@
             {
                 "key": "tab",
                 "command": "hsnips.nextPlaceholder",
-                "when": "editorTextFocus && hasNextTabstop && inSnippetMode"
+                "when": "editorTextFocus && hasNextTabstop && inSnippetMode && !suggestWidgetVisible"
             },
             {
                 "key": "shift+tab",
                 "command": "hsnips.prevPlaceholder",
-                "when": "editorTextFocus && hasPrevTabstop && inSnippetMode"
-            },
-            {
-                "key": "shift+escape",
-                "command": "hsnips.leaveSnippet",
-                "when": "editorTextFocus && inSnippetMode"
+                "when": "editorTextFocus && hasPrevTabstop && inSnippetMode && !suggestWidgetVisible"
             },
             {
                 "key": "escape",
                 "command": "hsnips.leaveSnippet",
-                "when": "editorTextFocus && inSnippetMode"
+                "when": "editorTextFocus && inSnippetMode && !suggestWidgetVisible"
             }
         ],
         "languages": [
