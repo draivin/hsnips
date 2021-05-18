@@ -38,6 +38,7 @@ endglobal
 Snippet blocks are snippet definitions. They are defined with the `snippet` keyword, as follows:
 
 ```hsnips
+context expression
 snippet trigger "description" flags
 body
 endsnippet
@@ -102,6 +103,37 @@ Additionally, every variable defined in one code block will be available in all 
 blocks in the snippet.
 
 The `require` function can also be used to import NodeJS modules.
+
+### Context matching
+
+Optionally, you can have a `context` expression before the snippet block, it is followed by any
+javascript expression, and the snippet is only available if the `context` expression evaluates to
+`true`.
+
+Inside the `context` expression there is a `context` variable available, of the following type:
+
+```ts
+interface Context {
+  scopes: string[];
+}
+```
+Here, `scopes` stands for the TextMate scopes at the current cursor position, which can be viewed by
+running the `Developer: Inspect Editor Tokens and Scopes` command in `vscode`.
+
+As an example, here is an automatic LaTeX snippet that only expands when inside a math block:
+
+```hsnips
+global
+function math(context) {
+    return context.scopes.some(s => s.startsWith("meta.math"));
+}
+endglobal
+
+context math(context)
+snippet inv "inverse" Ai
+^{-1}
+endsnippet
+```
 
 ## Examples
 
