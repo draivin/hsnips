@@ -6,11 +6,18 @@ export type GeneratorFunction = (
   fileUri: string
 ) => GeneratorResult;
 
+export interface ContextInfo {
+  scopes: string[];
+}
+
+export type ContextFilter = (context: ContextInfo) => boolean;
+
 // Represents a snippet template from which new instances can be created.
 export class HSnippet {
   trigger: string;
   description: string;
   generator: GeneratorFunction;
+  contextFilter?: ContextFilter;
   regexp?: RegExp;
   placeholders: number;
   priority: number;
@@ -22,9 +29,15 @@ export class HSnippet {
   wordboundary = false;
   beginningofline = false;
 
-  constructor(header: IHSnippetHeader, generator: GeneratorFunction, placeholders: number) {
+  constructor(
+    header: IHSnippetHeader,
+    generator: GeneratorFunction,
+    placeholders: number,
+    contextFilter?: ContextFilter
+  ) {
     this.description = header.description;
     this.generator = generator;
+    this.contextFilter = contextFilter;
     this.placeholders = placeholders;
     this.priority = header.priority || 0;
 

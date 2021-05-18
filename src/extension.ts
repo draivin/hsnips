@@ -87,6 +87,8 @@ export async function expandSnippet(
 }
 
 export function activate(context: vscode.ExtensionContext) {
+  vscode.extensions.getExtension('draivin.hscopes')?.activate();
+
   loadSnippets();
 
   context.subscriptions.push(

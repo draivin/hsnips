@@ -70,7 +70,16 @@ export function getCompletions(
   let longContext = null;
 
   let completions = [];
+  let snippetContext = {
+    scopes: vscode.extensions
+      .getExtension('draivin.hscopes')!
+      .exports.getScopeAt(document, position).scopes,
+  };
   for (let snippet of snippets) {
+    if (snippet.contextFilter && !snippet.contextFilter(snippetContext)) {
+      continue;
+    }
+
     let snippetMatches = false;
     let snippetRange = contextRange;
     let prefixMatches = false;
