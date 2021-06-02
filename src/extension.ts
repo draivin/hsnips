@@ -16,20 +16,30 @@ let insertingSnippet = false;
 async function loadSnippets() {
   SNIPPETS_BY_LANGUAGE.clear();
 
-  let snippetDir = getSnippetDir();
-  if (!existsSync(snippetDir)) {
-    mkdirSync(snippetDir);
+  const workspaceFolders = vscode.workspace.workspaceFolders || [];
+
+  const commonSnippetDir = getSnippetDir();
+  const workspaceSnippetDir = workspaceFolders.map(folder => path.join(folder.uri.path, '.vscode/hsnips'));
+  let snippetDirs = [...workspaceSnippetDir, commonSnippetDir];
+
+  if (!existsSync(commonSnippetDir)) {
+    mkdirSync(commonSnippetDir);
   }
 
-  for (let file of readdirSync(snippetDir)) {
-    if (path.extname(file).toLowerCase() != '.hsnips') continue;
+  for (let snippetDir of snippetDirs) {
+    for (let file of readdirSync(snippetDir)) {
+      if (path.extname(file).toLowerCase() != '.hsnips') continue;
+      
+      let filePath = path.join(snippetDir, file);
+      let fileData = readFileSync(filePath, 'utf8');
+      
+      let language = path.basename(file, '.hsnips').toLowerCase();
+      
+      const currentSnippet = SNIPPETS_BY_LANGUAGE.get(language) || [];
+      const parsedSnippet = parse(fileData);
 
-    let filePath = path.join(snippetDir, file);
-    let fileData = readFileSync(filePath, 'utf8');
-
-    let language = path.basename(file, '.hsnips').toLowerCase();
-
-    SNIPPETS_BY_LANGUAGE.set(language, parse(fileData));
+      SNIPPETS_BY_LANGUAGE.set(language, [...currentSnippet, ...parsedSnippet]);
+    }
   }
 
   let globalSnippets = SNIPPETS_BY_LANGUAGE.get('all');
