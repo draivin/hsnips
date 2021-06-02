@@ -22,7 +22,7 @@ Or alternatively, you can open this directory by running the command `HyperSnips
 Additionally, you can create an `all.hsnips` file for snippets that should be available on all languages.
 
 You can also create a `.vscode/hsnips` folder in your working directory and create your `.hsnips` files there.  
-Snippets declared in `.vscode/hsnips` take precedence over snippets declared in the platform specific folder mentioned above.
+Snippets declared in `.vscode/hsnips` take precedence over snippets declared in the platform specific folders mentioned above.
 
 ### Snippets file
 
