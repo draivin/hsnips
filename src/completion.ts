@@ -19,6 +19,11 @@ export class CompletionInfo {
 
   toCompletionItem() {
     let completionItem = new vscode.CompletionItem(this.label);
+    if (this.snippet.regexp) {
+      completionItem.label = this.snippet.description ?? this.label;
+      // needed to get the completionItem suggested by vscode
+      completionItem.filterText = this.label;
+    }
     completionItem.range = this.range;
     completionItem.detail = this.snippet.description;
     completionItem.insertText = this.label;
@@ -45,7 +50,7 @@ export function getCompletions(
   document: vscode.TextDocument,
   position: vscode.Position,
   snippets: HSnippet[]
-): CompletionInfo[] | CompletionInfo | undefined {
+) {
   let line = document.getText(lineRange(0, position));
 
   // Grab everything until previous whitespace as our matching context.
@@ -149,9 +154,9 @@ export function getCompletions(
     }
 
     let completion = new CompletionInfo(snippet, label, snippetRange, matchGroups);
-    if (snippet.automatic && snippetMatches) {
-      return completion;
-    } else if (prefixMatches) {
+    if (snippetMatches || prefixMatches) {
+      if(snippet.automatic) return [completion];
+
       completions.push(completion);
     }
   }

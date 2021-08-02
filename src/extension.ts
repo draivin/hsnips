@@ -175,12 +175,11 @@ export function activate(context: vscode.ExtensionContext) {
       let mainChangePosition = mainChange.range.start.translate(0, mainChange.text.length);
       let completions = getCompletions(e.document, mainChangePosition, snippets);
 
-      // When an automatic completion is matched it is returned as an element, we check for this by
-      // using !isArray, and then expand the snippet.
-      if (completions && !Array.isArray(completions)) {
+      // When an automatic completion is matched
+      if (completions.length === 1 && completions[0].snippet.automatic) {
         let editor = vscode.window.activeTextEditor;
         if (editor && e.document == editor.document) {
-          expandSnippet(completions, editor);
+          expandSnippet(completions[0], editor);
           return;
         }
       }
@@ -212,10 +211,9 @@ export function activate(context: vscode.ExtensionContext) {
         if (!snippets) snippets = SNIPPETS_BY_LANGUAGE.get('all');
         if (!snippets) return;
 
-        // When getCompletions returns an array it means no auto-expansion was matched for the
-        // current context, in this case show the snippet list to the user.
         let completions = getCompletions(document, position, snippets);
-        if (completions && Array.isArray(completions)) {
+        // When NO automatic completion is matched, we show the snippet list to the user.
+        if (!(completions.length == 1 && completions[0].snippet.automatic)) {
           return completions.map((c) => c.toCompletionItem());
         }
       },
