@@ -75,7 +75,9 @@ export class HSnippetInstance {
     // snippet function as 'sections', and the result of the interpolated javascript in the snippets
     // are referred to as 'blocks', as in code blocks.
     let [sections, blocks] = generatorResult;
-    blocks = blocks.map(String);
+
+    // escape preexisting dollars to avoid them being considered as placeholders
+    blocks = blocks.map(s => s.replace(/\$/g, "\\$"));
 
     this.parts = [];
     this.blockParts = [];

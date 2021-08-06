@@ -143,8 +143,7 @@ export function getCompletions(
           position
         );
         snippetMatches = true;
-        // escape preexisting dollars to avoid them being considered as placeholders
-        matchGroups = Array.from(match).map(s => s.replace(/\$/g, "\\$"));
+        matchGroups = Array.from(match)
         label = match[0];
       }
     }
