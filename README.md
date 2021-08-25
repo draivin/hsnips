@@ -4,7 +4,7 @@
 
 # HyperSnips for Math
 
-这是一个由 OrangeX4 魔改过的 HyperSnips, 增加了**对 Markdown 和 Latex 中数学环境匹配**的功能.
+这是一个由 OrangeX4 魔改过的 HyperSnips, 增加了**对 Markdown 和 Latex 中数学环境匹配**的功能. 并且加入了 `${VISUAL}` 语法的支持.
 
 **使用这个插件前, 请把原来的 HyperSnips 插件删除!**
 **使用这个插件前, 请把原来的 HyperSnips 插件删除!**
@@ -25,6 +25,14 @@ endsnippet
 ```
 
 相比于原来的 HyperSnips, 最大特点是, 它只会在数学环境 `$...$`, `$$...$$`, `\(...\)` 和 `\[...\]` 中自动展开!
+
+**还有 `${VISUAL}` 语法:**
+
+```
+snippet fr "frac" iAm
+\\frac{${1:${VISUAL}}}{$2}
+endsnippet
+```
 
 ![](./images/welcome.gif)
 

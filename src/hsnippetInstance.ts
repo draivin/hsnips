@@ -3,6 +3,16 @@ import { DynamicRange, GrowthType, IChangeInfo } from './dynamicRange';
 import { applyOffset, getWorkspaceUri } from './utils';
 import { HSnippet, GeneratorResult } from './hsnippet';
 
+
+// listen to the selection text
+let selectedText = "";
+vscode.window.onDidChangeTextEditorSelection((e) => {
+    const newSelectedText = e.textEditor.document.getText(e.selections[0]);
+    if (newSelectedText) {
+        selectedText = newSelectedText;
+    }
+});
+
 enum HSnippetPartType {
   Placeholder,
   Block,
@@ -85,6 +95,12 @@ export class HSnippetInstance {
     const indentLevel = editor.document.lineAt(position.line).firstNonWhitespaceCharacterIndex;
 
     for (let section of sections) {
+
+      if (typeof(section) == 'string') {
+        // Replace ${VISUAL} with selected text
+        section = section.replace(/\${VISUAL}/g, selectedText);
+      }
+
       let rawSection = section;
 
       if (typeof rawSection != 'string') {
