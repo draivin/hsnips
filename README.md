@@ -6,6 +6,8 @@
 
 这是一个由 OrangeX4 魔改过的 HyperSnips, 增加了**对 Markdown 和 Latex 中数学环境匹配**的功能. 并且加入了 `${VISUAL}` 语法的支持.
 
+GitHub 地址: https://github.com/OrangeX4/hsnips
+
 **使用这个插件前, 请把原来的 HyperSnips 插件删除!**
 **使用这个插件前, 请把原来的 HyperSnips 插件删除!**
 **使用这个插件前, 请把原来的 HyperSnips 插件删除!**
