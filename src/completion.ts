@@ -145,6 +145,7 @@ export function getCompletions(
         snippetMatches = true;
         matchGroups = match;
         label = match[0];
+        prefixMatches = true;
       }
     }
 
