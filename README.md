@@ -106,11 +106,10 @@ The `require` function can also be used to import NodeJS modules.
 
 ### Context matching
 
-Optionally, you can have a `context` expression before the snippet block, it is followed by any
-javascript expression, and the snippet is only available if the `context` expression evaluates to
-`true`.
+Optionally, you can have a `context` line before the snippet block, it is followed by any javascript
+expression, and the snippet is only available if the `context` expression evaluates to `true`.
 
-Inside the `context` expression there is a `context` variable available, of the following type:
+Inside the `context` expression you can use the `context` variable, which has the following type:
 
 ```ts
 interface Context {
