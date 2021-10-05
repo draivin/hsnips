@@ -29,7 +29,7 @@ global blocks and snippet blocks.
 Global blocks are JavaScript code blocks with code that is shared between all the snippets defined
 in the current file. They are defined with the `global` keyword, as follows:
 
-```hsnips
+```lua
 global
 // JavaScript code
 endglobal
@@ -37,7 +37,7 @@ endglobal
 
 Snippet blocks are snippet definitions. They are defined with the `snippet` keyword, as follows:
 
-```hsnips
+```lua
 context expression
 snippet trigger "description" flags
 body
@@ -121,7 +121,7 @@ running the `Developer: Inspect Editor Tokens and Scopes` command in `vscode`.
 
 As an example, here is an automatic LaTeX snippet that only expands when inside a math block:
 
-```hsnips
+```lua
 global
 function math(context) {
     return context.scopes.some(s => s.startsWith("meta.math"));
@@ -138,7 +138,7 @@ endsnippet
 
 - Simple snippet which greets you with the current date and time
 
-```hsnips
+```lua
 snippet dategreeting "Gives you the current date!"
 Hello from your hsnip at ``rv = new Date().toDateString()``!
 endsnippet
@@ -146,7 +146,7 @@ endsnippet
 
 - Box snippet as shown in the gif above
 
-```hsnips
+```lua
 snippet box "Box" A
 ``rv = '┌' + '─'.repeat(t[0].length + 2) + '┐'``
 │ $1 │
@@ -156,7 +156,7 @@ endsnippet
 
 - Snippet to insert the current filename
 
-```hsnips
+```lua
 snippet filename "Current Filename"
 ``rv = require('path').basename(path)``
 endsnippet
