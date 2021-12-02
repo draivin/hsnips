@@ -70,11 +70,17 @@ export function getCompletions(
   let longContext = null;
 
   let completions = [];
-  let snippetContext = {
-    scopes: vscode.extensions
-      .getExtension('draivin.hscopes')!
-      .exports.getScopeAt(document, position).scopes,
-  };
+  let snippetContext = { scopes: [] };
+
+  //FIXME: Plain text scope resolution should be fixed in hscopes.
+  if (document.languageId !== 'plaintext') {
+    snippetContext = {
+      scopes: vscode.extensions
+        .getExtension('draivin.hscopes')!
+        .exports.getScopeAt(document, position).scopes,
+    };
+  }
+
   for (let snippet of snippets) {
     if (snippet.contextFilter && !snippet.contextFilter(snippetContext)) {
       continue;

@@ -206,7 +206,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider([{ scheme: 'untitled' }, { scheme: 'file' }], {
+    vscode.languages.registerCompletionItemProvider([{ pattern: '**' }], {
       provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
         let snippets = SNIPPETS_BY_LANGUAGE.get(document.languageId.toLowerCase());
         if (!snippets) snippets = SNIPPETS_BY_LANGUAGE.get('all');
