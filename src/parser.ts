@@ -1,6 +1,7 @@
 import { HSnippet, IHSnippetHeader, GeneratorFunction, ContextFilter } from './hsnippet';
 
 const CODE_DELIMITER = '``';
+const CODE_DELIMITER_REGEX = /``(?!`)/
 const HEADER_REGEXP = /^snippet ?(?:`([^`]+)`|(\S+))?(?: "([^"]+)")?(?: ([AMiwb]*))?/;
 
 function parseSnippetHeader(header: string): IHSnippetHeader {
@@ -61,7 +62,7 @@ function parseSnippet(headerLine: string, lines: string[]): IHSnippetInfo {
       if (!line.includes(CODE_DELIMITER)) {
         script.push(line.trim());
       } else {
-        let [code, ...rest] = line.split(CODE_DELIMITER);
+        let [code, ...rest] = line.split(CODE_DELIMITER_REGEX);
         script.push(code.trim());
         lines.unshift(rest.join(CODE_DELIMITER));
         script.push(`_result.push({block: _blockResults.length});`);
@@ -76,7 +77,7 @@ function parseSnippet(headerLine: string, lines: string[]): IHSnippetInfo {
         script.push(`_result.push("\\n");`);
         placeholders += countPlaceholders(line);
       } else if (isCode == false) {
-        let [text, ...rest] = line.split(CODE_DELIMITER);
+        let [text, ...rest] = line.split(CODE_DELIMITER_REGEX);
         script.push(`_result.push("${escapeString(text)}");`);
         script.push(`rv = "";`);
         placeholders += countPlaceholders(text);
