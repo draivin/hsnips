@@ -1,0 +1,11 @@
+{
+  "comments": {
+    "lineComment": "#"
+  },
+  "folding": {
+    "markers": {
+      "start": "^snippet\\b",
+      "end": "^endsnippet\\b"
+    }
+  }
+}
