@@ -149,9 +149,9 @@ export function getCompletions(
           position
         );
         snippetMatches = true;
-        matchGroups = Array.from(match)
-        label = match[0];
         prefixMatches = true;
+        matchGroups = Array.from(match);
+        label = match[0];
       }
     }
 

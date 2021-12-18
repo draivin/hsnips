@@ -7,6 +7,7 @@ import { HSnippetInstance } from './hsnippetInstance';
 import { parse } from './parser';
 import { getSnippetDir } from './utils';
 import { getCompletions, CompletionInfo } from './completion';
+import { COMPLETIONS_TRIGGERS } from './consts';
 
 const SNIPPETS_BY_LANGUAGE: Map<string, HSnippet[]> = new Map();
 const SNIPPET_STACK: HSnippetInstance[] = [];
@@ -206,19 +207,23 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider([{ pattern: '**' }], {
-      provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
-        let snippets = SNIPPETS_BY_LANGUAGE.get(document.languageId.toLowerCase());
-        if (!snippets) snippets = SNIPPETS_BY_LANGUAGE.get('all');
-        if (!snippets) return;
+    vscode.languages.registerCompletionItemProvider(
+      [{ pattern: '**' }],
+      {
+        provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
+          let snippets = SNIPPETS_BY_LANGUAGE.get(document.languageId.toLowerCase());
+          if (!snippets) snippets = SNIPPETS_BY_LANGUAGE.get('all');
+          if (!snippets) return;
 
-        // When getCompletions returns an array it means no auto-expansion was matched for the
-        // current context, in this case show the snippet list to the user.
-        let completions = getCompletions(document, position, snippets);
-        if (completions && Array.isArray(completions)) {
-          return completions.map((c) => c.toCompletionItem());
-        }
+          // When getCompletions returns an array it means no auto-expansion was matched for the
+          // current context, in this case show the snippet list to the user.
+          let completions = getCompletions(document, position, snippets);
+          if (completions && Array.isArray(completions)) {
+            return completions.map((c) => c.toCompletionItem());
+          }
+        },
       },
-    })
+      ...COMPLETIONS_TRIGGERS
+    )
   );
 }
