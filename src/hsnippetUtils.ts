@@ -14,7 +14,7 @@ export class HSnippetUtils {
     this.placeholders = [];
   }
 
-  placeholder(tabstop: number, placeholder?: string) {
+  tabstop(tabstop: number, placeholder?: string) {
     const id = makeId(10);
 
     let text = '';
