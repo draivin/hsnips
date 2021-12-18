@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { DynamicRange, GrowthType, IChangeInfo } from './dynamicRange';
 import { applyOffset, getWorkspaceUri } from './utils';
 import { HSnippet, GeneratorResult } from './hsnippet';
+import { HSnippetUtils } from './hsnippetUtils';
 
 enum HSnippetPartType {
   Placeholder,
@@ -55,29 +56,12 @@ export class HSnippetInstance {
     this.placeholderIds = [];
     this.blockChanged = false;
 
-    // TODO, update parser so only the block that threw the error does not expand, perhaps replace
-    // the block with the error message.
-    let generatorResult: GeneratorResult = [[], []];
-    try {
-      generatorResult = type.generator(
-        new Array(this.type.placeholders).fill(''),
-        this.matchGroups,
-        getWorkspaceUri(),
-        editor.document.uri.toString()
-      );
-    } catch (e) {
-      vscode.window.showWarningMessage(
-        `Snippet ${this.type.description} failed to expand with error: ${e.message}`
-      );
-    }
+    let generatorResult = this.runCodeBlocks(true);
 
     // For a lack of creativity, I'm referring to the parts of the array that are returned by the
     // snippet function as 'sections', and the result of the interpolated javascript in the snippets
     // are referred to as 'blocks', as in code blocks.
     let [sections, blocks] = generatorResult;
-
-    // escape preexisting dollars to avoid them being considered as placeholders
-    blocks = blocks.map(s => s.replace(/\$/g, "\\$"));
 
     this.parts = [];
     this.blockParts = [];
@@ -130,6 +114,45 @@ export class HSnippetInstance {
     if (this.placeholderIds[0] == 0) this.placeholderIds.shift();
     this.placeholderIds.push(0);
     this.selectedPlaceholder = this.placeholderIds[0];
+  }
+
+  runCodeBlocks(stripDollars = true, placeholderContents?: string[]) {
+    if (!placeholderContents) {
+      placeholderContents = new Array(this.type.placeholders).fill('');
+    }
+
+    let generatorResult: GeneratorResult = [[], []];
+    let hsnippetUtils = new HSnippetUtils();
+
+    // TODO, update parser so only the block that threw the error does not expand, perhaps replace
+    // the block with the error message.
+    try {
+      generatorResult = this.type.generator(
+        placeholderContents,
+        this.matchGroups,
+        getWorkspaceUri(),
+        this.editor.document.uri.toString(),
+        hsnippetUtils
+      );
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        vscode.window.showWarningMessage(
+          `Snippet ${this.type.description} failed to expand with error: ${e.message}`
+        );
+      }
+    }
+
+    generatorResult[1] = generatorResult[1].map((block) => {
+      if (stripDollars) {
+        block = block.replace(/\$/g, '\\$');
+      }
+
+      block = HSnippetUtils.format(block, hsnippetUtils);
+
+      return block;
+    });
+
+    return generatorResult;
   }
 
   nextPlaceholder() {
@@ -219,12 +242,7 @@ export class HSnippetInstance {
       .filter((p) => p.type == HSnippetPartType.Placeholder)
       .map((p) => p.content);
 
-    let blocks = this.type.generator(
-      placeholderContents,
-      this.matchGroups,
-      getWorkspaceUri(),
-      this.editor.document.uri.toString()
-    )[1].map(String);
+    let blocks = this.runCodeBlocks(false, placeholderContents)[1];
 
     this.editor.edit((edit) => {
       for (let i = 0; i < blocks.length; i++) {

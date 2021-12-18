@@ -1,9 +1,12 @@
+import { HSnippetUtils } from './hsnippetUtils';
+
 export type GeneratorResult = [(string | { block: number })[], string[]];
 export type GeneratorFunction = (
   texts: string[],
   matchGroups: string[],
   workspaceUri: string,
-  fileUri: string
+  fileUri: string,
+  hsnippetUtils: HSnippetUtils
 ) => GeneratorResult;
 
 export interface ContextInfo {
