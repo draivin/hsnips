@@ -4,7 +4,7 @@
 
 # HyperSnips for Math
 
-这是一个由 OrangeX4 魔改过的 HyperSnips, 增加了**对 Markdown 和 Latex 中数学环境匹配**的功能. 并且加入了 `${VISUAL}` 语法的支持.
+这是一个由 OrangeX4 魔改过的 HyperSnips, 增加了**对 Markdown 和 Latex 中数学环境匹配** 的功能. 并且加入了 `${VISUAL}` 语法的支持.
 
 GitHub 地址: https://github.com/OrangeX4/hsnips
 
@@ -12,13 +12,27 @@ GitHub 地址: https://github.com/OrangeX4/hsnips
 **使用这个插件前, 请把原来的 HyperSnips 插件删除!**
 **使用这个插件前, 请把原来的 HyperSnips 插件删除!**
 
-看个小例子:
+先看个 **普通例子**:
+
+```hsnips
+snippet RR "R" iAm
+\mathbb{R}
+endsnippet
+```
+
+这是一个在数学环境中自动展开的 Snippet, 它有三个标示符 `iAm`, 分别代表 "在词语内部也会触发", "自动展开" 和 "数学环境".
+
+这个例子会在数学环境内, 自动将 `RR` 展开成为 `\mathbb{R}`, 代表 "实数".
+
+再看个 **正则表达式** 的例子:
 
 ``` hsnips
 snippet `((\d+)|(\d*)(\\)?([A-Za-z]+)((\^|_)(\{\d+\}|\d))*)/` "Fraction no ()" Am
 \frac{``rv = m[1]``}{$1}$0
 endsnippet
 ```
+
+其中 `rv = m[1]` 是 JavaScript 代码, 表示将正则表达式的第一个组 `m[1]` 输出给 "返回值" `rv`, 然后输出出去.
 
 这是一个在数学环境中自动展开的 Snippet, 它有两个标示符 'Am', 分别代表 '自动展开' 和 '数学环境'. 用处是:
 
@@ -35,6 +49,20 @@ snippet fr "frac" iAm
 \\frac{${1:${VISUAL}}}{$2}
 endsnippet
 ```
+
+这个语法会保存最近选中的内容, 然后替换掉 `${VISUAL}` 部分.
+
+要开启在 markdown 下的 **自动补全提示**, 请使用 `Shift + Ctrl + P` 然后输入 `open settings json` 打开配置文件, 然后加入以下部分:
+
+```json
+"[markdown]": {
+    "editor.quickSuggestions": true
+},
+```
+
+以下是原来的 `README.md`:
+
+---
 
 ![](./images/welcome.gif)
 
