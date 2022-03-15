@@ -4,13 +4,23 @@
 
 # HyperSnips for Math
 
-这是一个由 OrangeX4 魔改过的 HyperSnips, 增加了**对 Markdown 和 Latex 中数学环境匹配** 的功能. 并且加入了 `${VISUAL}` 语法的支持.
+这是一个由 [OrangeX4]() 魔改过的 HyperSnips, 增加了**对 Markdown 和 Latex 中数学环境匹配** 的功能. 并且加入了 `${VISUAL}` 语法的支持.
 
 GitHub 地址: https://github.com/OrangeX4/hsnips
 
 **使用这个插件前, 请把原来的 HyperSnips 插件删除!**
 **使用这个插件前, 请把原来的 HyperSnips 插件删除!**
 **使用这个插件前, 请把原来的 HyperSnips 插件删除!**
+
+并且 **开启** 在 markdown 下的 **自动补全提示**, 请使用 `Shift + Ctrl + P` 然后输入 `open settings json` 打开配置文件, 然后加入以下部分:
+
+```json
+"[markdown]": {
+    "editor.quickSuggestions": true
+},
+```
+
+**安装完成后**, 按下快捷键 `Ctrl + Shift + P`, 输入命令 `Open Snippets Directory`, 就可以打开一个文件夹. 在 **该文件夹** 新建一个文件 `markdown.hsnips`, 并将 [OrangeX4's hsnips](https://github.com/OrangeX4/OrangeX4-HyperSnips/blob/main/markdown.hsnips) 里面的内容输入进去, 保存, 就可以使用了.
 
 先看个 **普通例子**:
 
@@ -51,14 +61,6 @@ endsnippet
 ```
 
 这个语法会保存最近选中的内容, 然后替换掉 `${VISUAL}` 部分.
-
-要开启在 markdown 下的 **自动补全提示**, 请使用 `Shift + Ctrl + P` 然后输入 `open settings json` 打开配置文件, 然后加入以下部分:
-
-```json
-"[markdown]": {
-    "editor.quickSuggestions": true
-},
-```
 
 以下是原来的 `README.md`:
 
