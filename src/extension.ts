@@ -157,15 +157,18 @@ export function activate(context: vscode.ExtensionContext) {
         text = text.replace(/```[\s\S]+?```/g, '')
         text = text.replace(/`[^`\n]+`/g, '')
         text = text.replace(/<!--[\s\S]+?-->/g, '')
-        text = text.replace(/\\text{[^}]+}/g, '')
-        text = text.replace(/\\operatorname{[^}\n]+}/g, '')
-        text = text.replace(/\\mathrm{[^}\n]+}/g, '')
         const reg = /(\\begin\{align\*\}[^\$]*?\\end\{align\*\})|(\\begin\{align\}[^\$]*?\\end\{align\})|(\\begin\{equation\*\}[^\$]*?\\end\{equation\*\})|(\\begin\{equation\}[^\$]*?\\end\{equation\})|(\\\[[^\$]*?\\\])|(\\\([^\$]*?\\\))|(\$\$[^\$]+\$\$)|(\$[^\$]+?\$)/g
         text = text.replace(reg, '')
         if (text.indexOf('$') == -1 && text.indexOf('\\(') == -1 && text.indexOf('\\[') == -1 && text.indexOf('\\begin{equation}') == -1 && text.indexOf('\\begin{equation*}') == -1 && text.indexOf('\\begin{align}') == -1 && text.indexOf('\\begin{align*}') == -1) {
             return false
         } else {
-            return true
+            const txt_reg = /(\\text{[^}]+})|(\\operatorname{[^}\n]+})|(\\mathrm{[^}\n]+})/g
+            text = text.replace(txt_reg, ' ')
+            if (text.indexOf('\\text{') == -1 && text.indexOf('\\operatorname{') == -1 && text.indexOf('\\mathrm{') == -1) {
+                return true
+            } else {
+                return false
+            }
         }
     }
 
