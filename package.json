@@ -2,7 +2,7 @@
     "name": "hsnips",
     "displayName": "HyperSnips for Math",
     "icon": "images/hypersnips.png",
-    "version": "0.3.4",
+    "version": "0.3.5",
     "publisher": "OrangeX4",
     "license": "MIT",
     "repository": {

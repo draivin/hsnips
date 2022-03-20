@@ -60,7 +60,7 @@ snippet fr "frac" iAm
 endsnippet
 ```
 
-这个语法会保存最近选中的内容, 然后替换掉 `${VISUAL}` 部分.
+这个语法会保存最近选中的内容 (5 秒内), 然后替换掉 `${VISUAL}` 部分.
 
 以下是原来的 `README.md`:
 
