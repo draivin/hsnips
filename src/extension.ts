@@ -167,6 +167,8 @@ export function activate(context: vscode.ExtensionContext) {
       if (e.contentChanges.length === 0) return;
 
       let mainChange = e.contentChanges[0];
+      
+      if (!mainChange) return;
 
       // Let's try to detect only events that come from keystrokes.
       if (mainChange.text.length != 1) return;
