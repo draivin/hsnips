@@ -192,6 +192,7 @@ export class HSnippetInstance {
 
     // Expand ranges from left to right, preserving relative part positions.
     for (let change of ordChanges) {
+      if (!change) continue;
       let part = this.parts[currentPart];
 
       while (currentPart < this.parts.length) {
