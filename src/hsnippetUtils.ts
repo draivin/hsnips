@@ -30,7 +30,7 @@ export class HSnippetUtils {
 
   static format(value: string, utils: HSnippetUtils) {
     for (let [id, text] of utils.placeholders) {
-      value = value.replace(id, text);
+      value = value.replace(new RegExp(`\\[${id.slice(1, -1)}\\]`, 'g'), text);
     }
 
     return value;
