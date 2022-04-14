@@ -17,8 +17,11 @@ To use HyperSnips you create `.hsnips` files on a directory which depends on you
 - Mac: `$HOME/Library/Application Support/Code/User/hsnips/(language).hsnips`
 - Linux: `$HOME/.config/Code/User/hsnips/(language).hsnips`
 
-Or alternatively, you can open this directory by running the command `HyperSnips: Open snippets directory`.
+You can open this directory by running the command `HyperSnips: Open snippets directory`.
+This directory may be customized by changing the setting `hsnips.hsnipsPath`.
 
+The file should be named based on the language the snippets are meant for (e.g. `latex.hsnips`
+for snippets which will be available for LaTeX files).
 Additionally, you can create an `all.hsnips` file for snippets that should be available on all languages.
 
 ### Snippets file

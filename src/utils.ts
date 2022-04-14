@@ -7,6 +7,15 @@ export function lineRange(character: number, position: vscode.Position): vscode.
 }
 
 export function getSnippetDir(): string {
+  let hsnipsPath = vscode.workspace.getConfiguration('hsnips').get('hsnipsPath') as string | null;
+
+  if (hsnipsPath) {
+    let workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+
+    if (path.isAbsolute(hsnipsPath)) return hsnipsPath;
+    else if (workspaceFolder) return path.join(workspaceFolder.uri.fsPath, hsnipsPath);
+  }
+
   let platform = os.platform();
 
   let APPDATA = process.env.APPDATA || '';
@@ -38,5 +47,5 @@ export function applyOffset(
 }
 
 export function getWorkspaceUri(): string {
-  return vscode.workspace.workspaceFolders?.[0]?.uri?.toString() ?? "";
+  return vscode.workspace.workspaceFolders?.[0]?.uri?.toString() ?? '';
 }

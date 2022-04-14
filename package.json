@@ -38,6 +38,14 @@
                         "type": "number",
                         "default": 20,
                         "description": "Number of lines matched when using multi-line regex mode."
+                    },
+                    "hsnips.hsnipsPath": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "default": null,
+                        "description": "Absolute path or relative path from the workspace folder to the folder containing the hsnips files."
                     }
                 }
             }
