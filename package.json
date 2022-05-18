@@ -2,7 +2,7 @@
     "name": "hsnips",
     "displayName": "HyperSnips for Math",
     "icon": "images/hypersnips.png",
-    "version": "0.3.7",
+    "version": "0.4.0",
     "publisher": "OrangeX4",
     "license": "MIT",
     "repository": {
@@ -38,6 +38,21 @@
                         "type": "number",
                         "default": 20,
                         "description": "Number of lines matched when using multi-line regex mode."
+                    },
+                    "hsnips.windows": {
+                      "type": "string",
+                      "default": "%APPDATA%/Code/User/hsnips",
+                      "description": "Custom path for Windows."
+                    },
+                    "hsnips.linux": {
+                        "type": "string",
+                        "default": "$HOME/.config/Code/User/hsnips",
+                        "description": "Custom path for Linux."
+                    },
+                    "hsnips.mac": {
+                        "type": "string",
+                        "default": "$HOME/Library/Application Support/Code/User/hsnips",
+                        "description": "Custom path for Mac OS."
                     }
                 }
             }

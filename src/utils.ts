@@ -12,12 +12,19 @@ export function getSnippetDir(): string {
   let APPDATA = process.env.APPDATA || '';
   let HOME = process.env.HOME || '';
 
+  function parse_path(path: string) {
+    return path.replace(/\%APPDATA\%/g, APPDATA).replace(/\$HOME/g, HOME);
+  }
+
   if (platform == 'win32') {
-    return path.join(APPDATA, 'Code/User/hsnips');
+    let path: string | undefined = vscode.workspace.getConfiguration('hsnips').get('windows');
+    return parse_path(path ? path : parse_path("%APPDATA%/Code/User/hsnips"));
   } else if (platform == 'darwin') {
-    return path.join(HOME, 'Library/Application Support/Code/User/hsnips');
+    let path: string | undefined = vscode.workspace.getConfiguration('hsnips').get('mac');
+    return parse_path(path ? path : parse_path("$HOME/Library/Application Support/Code/User/hsnips"));
   } else {
-    return path.join(HOME, '.config/Code/User/hsnips');
+    let path: string | undefined = vscode.workspace.getConfiguration('hsnips').get('linux');
+    return parse_path(path ? path : parse_path("$HOME/.config/Code/User/hsnips"));
   }
 }
 
