@@ -11,6 +11,7 @@ vscode.window.onDidChangeTextEditorSelection((e) => {
     const newSelectedText = e.textEditor.document.getText(e.selections[0]);
     if (newSelectedText) {
         selectedText = newSelectedText;
+        selectedText = selectedText.replace(/\\\\/g,"\\\\\\ ").replace(/\}/g,"\\}");
         lastTimeOfselectedTextChanged = new Date().getTime();
     }
 });
