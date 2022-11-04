@@ -154,6 +154,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     function isMathEnvironment(editor: vscode.TextEditor) {
         let text = editor.document.getText(new vscode.Range(new vscode.Position(0, 0), editor.selection.start))
+        text = text.replace(/\\\$/g, '')
         text = text.replace(/```[\s\S]+?```/g, '')
         text = text.replace(/`[^`\n]+`/g, '')
         text = text.replace(/<!--[\s\S]+?-->/g, '')

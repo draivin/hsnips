@@ -18,13 +18,13 @@ export function getSnippetDir(): string {
 
   if (platform == 'win32') {
     let path: string | undefined = vscode.workspace.getConfiguration('hsnips').get('windows');
-    return parse_path(path ? path : parse_path("%APPDATA%/Code/User/hsnips"));
+    return parse_path(path ? parse_path(path) : parse_path("%APPDATA%/Code/User/hsnips"));
   } else if (platform == 'darwin') {
     let path: string | undefined = vscode.workspace.getConfiguration('hsnips').get('mac');
-    return parse_path(path ? path : parse_path("$HOME/Library/Application Support/Code/User/hsnips"));
+    return parse_path(path ? parse_path(path) : parse_path("$HOME/Library/Application Support/Code/User/hsnips"));
   } else {
     let path: string | undefined = vscode.workspace.getConfiguration('hsnips').get('linux');
-    return parse_path(path ? path : parse_path("$HOME/.config/Code/User/hsnips"));
+    return parse_path(path ? parse_path(path) : parse_path("$HOME/.config/Code/User/hsnips"));
   }
 }
 
