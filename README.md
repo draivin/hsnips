@@ -1,7 +1,3 @@
-[![Version](https://vsmarketplacebadge.apphb.com/version-short/draivin.hsnips.svg)](https://marketplace.visualstudio.com/items?itemName=draivin.hsnips)
-[![Rating](https://vsmarketplacebadge.apphb.com/rating-short/draivin.hsnips.svg)](https://marketplace.visualstudio.com/items?itemName=draivin.hsnips)
-[![Installs](https://vsmarketplacebadge.apphb.com/installs/draivin.hsnips.svg)](https://marketplace.visualstudio.com/items?itemName=draivin.hsnips)
-
 # HyperSnips
 
 ![](./images/welcome.gif)
