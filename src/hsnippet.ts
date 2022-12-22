@@ -22,7 +22,6 @@ export class HSnippet {
   generator: GeneratorFunction;
   contextFilter?: ContextFilter;
   regexp?: RegExp;
-  placeholders: number;
   priority: number;
 
   // UltiSnips-like options.
@@ -35,13 +34,11 @@ export class HSnippet {
   constructor(
     header: IHSnippetHeader,
     generator: GeneratorFunction,
-    placeholders: number,
     contextFilter?: ContextFilter
   ) {
     this.description = header.description;
     this.generator = generator;
     this.contextFilter = contextFilter;
-    this.placeholders = placeholders;
     this.priority = header.priority || 0;
 
     if (header.trigger instanceof RegExp) {

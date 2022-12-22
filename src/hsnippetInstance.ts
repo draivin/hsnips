@@ -117,10 +117,6 @@ export class HSnippetInstance {
   }
 
   runCodeBlocks(stripDollars = true, placeholderContents?: string[]) {
-    if (!placeholderContents) {
-      placeholderContents = new Array(this.type.placeholders).fill('');
-    }
-
     let generatorResult: GeneratorResult = [[], []];
     let hsnippetUtils = new HSnippetUtils();
 
@@ -128,7 +124,13 @@ export class HSnippetInstance {
     // the block with the error message.
     try {
       generatorResult = this.type.generator(
-        placeholderContents,
+        new Proxy(placeholderContents || [], {
+          get(target, key) {
+            let index = Number(key);
+            if (target[index]) return target[index];
+            else return '';
+          },
+        }),
         this.matchGroups,
         getWorkspaceUri(),
         this.editor.document.uri.toString(),
@@ -196,7 +198,7 @@ export class HSnippetInstance {
     // Expand ranges from left to right, preserving relative part positions.
     for (let change of ordChanges) {
       if (!change) continue;
-      
+
       let part = this.parts[currentPart];
 
       while (currentPart < this.parts.length) {

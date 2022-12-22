@@ -24,7 +24,6 @@ function parseSnippetHeader(header: string): IHSnippetHeader {
 interface IHSnippetInfo {
   body: string;
   contextFilter?: string;
-  placeholders: number;
   header: IHSnippetHeader;
 }
 
@@ -40,10 +39,6 @@ function escapeString(string: string) {
   return string.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
-function countPlaceholders(string: string) {
-  return string.split(/\$\d+|\$\{\d+\}/g).length - 1;
-}
-
 function parseSnippet(headerLine: string, lines: string[]): IHSnippetInfo {
   let header = parseSnippetHeader(headerLine);
 
@@ -53,7 +48,6 @@ function parseSnippet(headerLine: string, lines: string[]): IHSnippetInfo {
   script.push(`let _blockResults = [];`);
 
   let isCode = false;
-  let placeholders = 0;
 
   while (lines.length > 0) {
     let line = lines.shift() as string;
@@ -75,12 +69,10 @@ function parseSnippet(headerLine: string, lines: string[]): IHSnippetInfo {
       } else if (!line.includes(CODE_DELIMITER)) {
         script.push(`_result.push("${escapeString(line)}");`);
         script.push(`_result.push("\\n");`);
-        placeholders += countPlaceholders(line);
       } else if (isCode == false) {
         let [text, ...rest] = line.split(CODE_DELIMITER_REGEX);
         script.push(`_result.push("${escapeString(text)}");`);
         script.push(`rv = "";`);
-        placeholders += countPlaceholders(text);
         lines.unshift(rest.join(CODE_DELIMITER));
         isCode = true;
       }
@@ -92,7 +84,7 @@ function parseSnippet(headerLine: string, lines: string[]): IHSnippetInfo {
   script.push(`return [_result, _blockResults];`);
   script.push(`}`);
 
-  return { body: script.join('\n'), header, placeholders };
+  return { body: script.join('\n'), header };
 }
 
 // Transforms an hsnips file into a single function where the global context lives, every snippet is
@@ -150,12 +142,6 @@ export function parse(content: string): HSnippet[] {
   // so we're going to bind the it onto the function
   let generators = new Function('require', script.join('\n'))(require) as IHSnippetParseResult[];
   return snippetInfos.map(
-    (s, i) =>
-      new HSnippet(
-        s.header,
-        generators[i].generatorFunction,
-        s.placeholders,
-        generators[i].contextFilter
-      )
+    (s, i) => new HSnippet(s.header, generators[i].generatorFunction, generators[i].contextFilter)
   );
 }
