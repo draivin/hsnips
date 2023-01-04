@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
-import { existsSync, mkdirSync, readdirSync, readFileSync } from 'fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync } from 'fs';
 import * as path from 'path';
 import openExplorer = require('open-file-explorer');
 import { HSnippet } from './hsnippet';
 import { HSnippetInstance } from './hsnippetInstance';
 import { parse } from './parser';
-import { getSnippetDir } from './utils';
+import { getOldGlobalSnippetDir, getSnippetDirInfo, SnippetDirType } from './utils';
 import { getCompletions, CompletionInfo } from './completion';
 import { COMPLETIONS_TRIGGERS } from './consts';
 
@@ -14,18 +14,24 @@ const SNIPPET_STACK: HSnippetInstance[] = [];
 
 let insertingSnippet = false;
 
-async function loadSnippets() {
+async function loadSnippets(context: vscode.ExtensionContext) {
   SNIPPETS_BY_LANGUAGE.clear();
 
-  let snippetDir = getSnippetDir();
-  if (!existsSync(snippetDir)) {
-    mkdirSync(snippetDir);
+  const snippetDirInfo = getSnippetDirInfo(context);
+  if (snippetDirInfo === null) {
+    return;
   }
 
-  for (let file of readdirSync(snippetDir)) {
+  const snippetDirPath = snippetDirInfo.path;
+
+  if (!existsSync(snippetDirPath)) {
+    mkdirSync(snippetDirPath, { recursive: true });
+  }
+
+  for (let file of readdirSync(snippetDirPath)) {
     if (path.extname(file).toLowerCase() != '.hsnips') continue;
 
-    let filePath = path.join(snippetDir, file);
+    let filePath = path.join(snippetDirPath, file);
     let fileData = readFileSync(filePath, 'utf8');
 
     let language = path.basename(file, '.hsnips').toLowerCase();
@@ -90,27 +96,39 @@ export async function expandSnippet(
 export function activate(context: vscode.ExtensionContext) {
   vscode.extensions.getExtension('draivin.hscopes')?.activate();
 
-  loadSnippets();
+  // migrating from the old, hardcoded directory to the new one. TODO: remove this at some point
+  const oldGlobalSnippetDir = getOldGlobalSnippetDir();
+  if (existsSync(oldGlobalSnippetDir)) {
+    // only the global directory needs to be migrated, which is why `ignoreWorkspace` is set to `true` here
+    const newSnippetDirInfo = getSnippetDirInfo(context, { ignoreWorkspace: true });
+
+    if (newSnippetDirInfo.type == SnippetDirType.Global) {
+      mkdirSync(newSnippetDirInfo.path, { recursive: true });
+      renameSync(oldGlobalSnippetDir, newSnippetDirInfo.path);
+    }
+  }
+
+  loadSnippets(context);
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('hsnips.openSnippetsDir', () => openExplorer(getSnippetDir()))
+    vscode.commands.registerCommand('hsnips.openSnippetsDir', () => openExplorer(getSnippetDirInfo(context).path))
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand('hsnips.openSnippetFile', async () => {
-      let snippetDir = getSnippetDir();
-      let files = readdirSync(snippetDir);
+      let snippetDirPath = getSnippetDirInfo(context).path;
+      let files = readdirSync(snippetDirPath);
       let selectedFile = await vscode.window.showQuickPick(files);
 
       if (selectedFile) {
-        let document = await vscode.workspace.openTextDocument(path.join(snippetDir, selectedFile));
+        let document = await vscode.workspace.openTextDocument(path.join(snippetDirPath, selectedFile));
         vscode.window.showTextDocument(document);
       }
     })
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('hsnips.reloadSnippets', () => loadSnippets())
+    vscode.commands.registerCommand('hsnips.reloadSnippets', () => loadSnippets(context))
   );
 
   context.subscriptions.push(
@@ -141,7 +159,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument((document) => {
       if (document.languageId == 'hsnips') {
-        loadSnippets();
+        loadSnippets(context);
       }
     })
   );
