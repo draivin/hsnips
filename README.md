@@ -1,6 +1,6 @@
-[![Version](https://vsmarketplacebadge.apphb.com/version-short/draivin.hsnips.svg)](https://marketplace.visualstudio.com/items?itemName=draivin.hsnips)
-[![Rating](https://vsmarketplacebadge.apphb.com/rating-short/draivin.hsnips.svg)](https://marketplace.visualstudio.com/items?itemName=draivin.hsnips)
-[![Installs](https://vsmarketplacebadge.apphb.com/installs/draivin.hsnips.svg)](https://marketplace.visualstudio.com/items?itemName=draivin.hsnips)
+[![Version](https://vsmarketplacebadges.dev/version-short/orangex4.hsnips.png)](https://marketplace.visualstudio.com/items?itemName=orangex4.hsnips)
+[![Rating](https://vsmarketplacebadges.dev/rating-short/orangex4.hsnips.png)](https://marketplace.visualstudio.com/items?itemName=orangex4.hsnips)
+[![Installs](https://vsmarketplacebadges.dev/installs/orangex4.hsnips.png)](https://marketplace.visualstudio.com/items?itemName=orangex4.hsnips)
 
 # HyperSnips for Math
 
