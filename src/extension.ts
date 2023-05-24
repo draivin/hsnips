@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { existsSync, mkdirSync, readdirSync, readFileSync } from 'fs';
 import * as path from 'path';
-import openExplorer = require('open-file-explorer');
+import { openExplorer } from './openFileExplorer';
 import { HSnippet } from './hsnippet';
 import { HSnippetInstance } from './hsnippetInstance';
 import { parse } from './parser';

@@ -1,19 +1,38 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 import * as os from 'os';
 
 export function lineRange(character: number, position: vscode.Position): vscode.Range {
   return new vscode.Range(position.line, character, position.line, position.character);
 }
 
+function RegReplace(text: string, reg: RegExp, replaceFn: (match: RegExpExecArray) => string): string {
+    let result = '';
+    let last = 0;
+    while (true) {
+        let match = reg.exec(text);
+        if (!match) break;
+        result += text.slice(last, match.index) + replaceFn(match);
+        last = match.index + match[0].length;
+    }
+    result += text.slice(last);
+    return result;
+}
+
 export function getSnippetDir(): string {
   let platform = os.platform();
 
-  let APPDATA = process.env.APPDATA || '';
-  let HOME = process.env.HOME || '';
-
   function parse_path(path: string) {
-    return path.replace(/\%APPDATA\%/g, APPDATA).replace(/\$HOME/g, HOME);
+    // replace all %VAR% with their respective env vars
+    if (platform == 'win32') {
+        path = RegReplace(path, /\%(\w+)\%/g, (match) => process.env[match[1]] || '');
+    } else {
+        path = RegReplace(path, /\$(\w+)/g, (match) => process.env[match[1]] || '');
+    }
+    if (platform == 'win32') {
+        // replace all / with \ for windows
+        path = path.replace(/\//g, '\\');
+    }
+    return path;
   }
 
   if (platform == 'win32') {

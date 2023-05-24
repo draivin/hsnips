@@ -40,9 +40,9 @@
                         "description": "Number of lines matched when using multi-line regex mode."
                     },
                     "hsnips.windows": {
-                      "type": "string",
-                      "default": "%APPDATA%/Code/User/hsnips",
-                      "description": "Custom path for Windows."
+                        "type": "string",
+                        "default": "%APPDATA%/Code/User/hsnips",
+                        "description": "Custom path for Windows."
                     },
                     "hsnips.linux": {
                         "type": "string",
@@ -130,8 +130,5 @@
         "@types/vscode": "^1.52.0",
         "eslint": "^7.17.0",
         "typescript": "^3.9.7"
-    },
-    "dependencies": {
-        "open-file-explorer": "^1.0.2"
     }
 }
