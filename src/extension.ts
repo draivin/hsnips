@@ -201,11 +201,7 @@ export function activate(context: vscode.ExtensionContext) {
             if (completions && !Array.isArray(completions)) {
                 let editor = vscode.window.activeTextEditor;
                 if (editor && e.document == editor.document &&
-                    (e.document.languageId.toLowerCase() !== 'markdown' &&
-                        e.document.languageId.toLowerCase() !== 'latex' ||
-                        !completions.snippet.math ||
-                        isMathEnvironment(editor))) {
-
+                    (!completions.snippet.math || isMathEnvironment(editor))) {
                     expandSnippet(completions, editor);
                     return;
                 }
@@ -243,14 +239,8 @@ export function activate(context: vscode.ExtensionContext) {
                 let completions = getCompletions(document, position, snippets);
                 if (completions && Array.isArray(completions)) {
                     let editor = vscode.window.activeTextEditor;
-                    let isMath = false
-                    if (editor) {
-                        isMath = isMathEnvironment(editor)
-                    }
                     return completions.filter((c) => {
-                        if (editor && (editor.document.languageId.toLowerCase() !== 'markdown' &&
-                            editor.document.languageId.toLowerCase() !== 'latex' ||
-                            !c.snippet.math || isMath)) {
+                        if (editor && (!c.snippet.math || isMathEnvironment(editor))) {
                             return true
                         } else {
                             return false
