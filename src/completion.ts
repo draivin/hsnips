@@ -158,8 +158,10 @@ export function getCompletions(
     let completion = new CompletionInfo(snippet, label, snippetRange, matchGroups);
     if (snippet.automatic && snippetMatches) {
       return completion;
-    } else if (prefixMatches) {
-      completions.push(completion);
+    } else if (!snippet.hidden) {
+      if (prefixMatches) {
+        completions.push(completion);
+      }
     }
   }
 

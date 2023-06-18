@@ -30,6 +30,7 @@ export class HSnippet {
   inword = false;
   wordboundary = false;
   beginningofline = false;
+  hidden = false;
 
   constructor(
     header: IHSnippetHeader,
@@ -48,6 +49,7 @@ export class HSnippet {
       this.trigger = header.trigger;
     }
 
+    if (header.flags.includes('H')) this.hidden = true;
     if (header.flags.includes('A')) this.automatic = true;
     if (header.flags.includes('M')) this.multiline = true;
     if (header.flags.includes('i')) this.inword = true;

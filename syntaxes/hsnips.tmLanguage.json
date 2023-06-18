@@ -11,7 +11,7 @@
       }
     },
     {
-      "begin": "^(snippet) ?(?:(`[^`]+`)|([\\S]+))?(?: (\"[^\"]+\"))?(?: ([AMiwb]*))?.*",
+      "begin": "^(snippet) ?(?:(`[^`]+`)|([\\S]+))?(?: (\"[^\"]+\"))?(?: ([HAMiwb]*))?.*",
       "beginCaptures": {
         "1": {
           "name": "keyword.control"
