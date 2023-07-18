@@ -2,7 +2,7 @@ import { HSnippet, IHSnippetHeader, GeneratorFunction, ContextFilter } from './h
 
 const CODE_DELIMITER = '``';
 const CODE_DELIMITER_REGEX = /``(?!`)/;
-const HEADER_REGEXP = /^snippet ?(?:`([^`]+)`|(\S+))?(?: "([^"]+)")?(?: ([AMiwb]*))?/;
+const HEADER_REGEXP = /^snippet ?(?:`([^`]+)`|(\S+))?(?: "([^"]+)")?(?: ([(1-9)AMiwb]*))?/;
 
 function parseSnippetHeader(header: string): IHSnippetHeader {
   let match = HEADER_REGEXP.exec(header);

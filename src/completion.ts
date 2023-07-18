@@ -89,6 +89,7 @@ export function getCompletions(
     let snippetMatches = false;
     let snippetRange = contextRange;
     let prefixMatches = false;
+    let prefixLength: number;
 
     let matchGroups: string[] = [];
     let label = snippet.trigger;
@@ -117,6 +118,8 @@ export function getCompletions(
         snippetRange = new vscode.Range(position.translate(0, -matchingPrefix.length), position);
         prefixMatches = true;
       }
+      prefixLength = typeof (matchingPrefix) !== "string" ? 0 : matchingPrefix!.length;
+
     } else if (snippet.regexp) {
       let regexContext = line;
 
@@ -158,8 +161,10 @@ export function getCompletions(
     let completion = new CompletionInfo(snippet, label, snippetRange, matchGroups);
     if (snippet.automatic && snippetMatches) {
       return completion;
-    } else if (prefixMatches) {
-      completions.push(completion);
+    } else if (snippet.hiddenuntil <= prefixLength!) {
+      if (prefixMatches) {
+        completions.push(completion);
+      }
     }
   }
 

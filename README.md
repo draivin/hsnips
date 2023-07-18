@@ -61,6 +61,10 @@ flags are the following:
   with the `A` flag snippets will activate as soon as their trigger matches, it is specially useful
   for regex snippets.
 
+- `1-9`: Hide snippet from inline suggestions up to character (1-9)\* - By default, all snippets will be listed 
+  by the inline suggestions. With a specified number snippets will be hidden from suggestion until the specified
+  number of characters are written. (If number exceeds trigger length: Necessarily needs `A` flag or else snippet won't expand)
+
 - `i`: In-word expansion\* - By default, a snippet trigger will only match when the trigger is
   preceded by whitespace characters. A snippet with this option is triggered regardless of the
   preceding character, for example, a snippet can be triggered in the middle of a word.
