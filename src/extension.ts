@@ -103,7 +103,7 @@ export function activate(context: vscode.ExtensionContext) {
     const newSnippetDirInfo = getSnippetDirInfo(context, { ignoreWorkspace: true });
 
     if (newSnippetDirInfo.type == SnippetDirType.Global) {
-      mkdirSync(newSnippetDirInfo.path, { recursive: true });
+      mkdirSync(path.dirname(newSnippetDirInfo.path), { recursive: true });
       renameSync(oldGlobalSnippetDir, newSnippetDirInfo.path);
     }
   }
@@ -111,7 +111,9 @@ export function activate(context: vscode.ExtensionContext) {
   loadSnippets(context);
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('hsnips.openSnippetsDir', () => openExplorer(getSnippetDirInfo(context).path))
+    vscode.commands.registerCommand('hsnips.openSnippetsDir', () =>
+      openExplorer(getSnippetDirInfo(context).path)
+    )
   );
 
   context.subscriptions.push(
@@ -121,7 +123,9 @@ export function activate(context: vscode.ExtensionContext) {
       let selectedFile = await vscode.window.showQuickPick(files);
 
       if (selectedFile) {
-        let document = await vscode.workspace.openTextDocument(path.join(snippetDirPath, selectedFile));
+        let document = await vscode.workspace.openTextDocument(
+          path.join(snippetDirPath, selectedFile)
+        );
         vscode.window.showTextDocument(document);
       }
     })
@@ -185,7 +189,7 @@ export function activate(context: vscode.ExtensionContext) {
       if (e.contentChanges.length === 0) return;
 
       let mainChange = e.contentChanges[0];
-      
+
       if (!mainChange) return;
 
       // Let's try to detect only events that come from keystrokes.
